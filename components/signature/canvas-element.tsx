@@ -106,7 +106,7 @@ export default function CanvasElement({
           ? "ring-2 ring-primary"
           : "hover:ring-1 hover:ring-primary/50"
       }`}
-      onClick={(e) => {
+      onClick={(e: { stopPropagation: () => void; }) => {
         e.stopPropagation();
         onSelect(id);
       }}

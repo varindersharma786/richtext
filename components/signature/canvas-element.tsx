@@ -90,7 +90,7 @@ export default function CanvasElement({
       }}
       onDrag={(e, d) => {
         // Optional: Real-time updates for smoother guides, but might be performance heavy
-        // onUpdate(id, { position: { x: d.x, y: d.y } })
+        onUpdate(id, { position: { x: d.x, y: d.y } })
       }}
       onResizeStop={(e, direction, ref, delta, position) => {
         onUpdate(id, {

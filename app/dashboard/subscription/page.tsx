@@ -19,6 +19,12 @@ export default async function SubscriptionPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", user?.id)
+    .single();
+
   const { data: subscription } = await supabase
     .from("subscriptions")
     .select("*")
@@ -44,7 +50,7 @@ export default async function SubscriptionPage() {
                 Your active subscription details.
               </CardDescription>
             </div>
-            {subscription ? (
+            {profile?.plan && profile.plan !== "free" ? (
               <Badge className="bg-green-500 hover:bg-green-600">Active</Badge>
             ) : (
               <Badge variant="secondary">Free Plan</Badge>
@@ -52,25 +58,28 @@ export default async function SubscriptionPage() {
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          {subscription ? (
+          {profile?.plan && profile.plan !== "free" ? (
             <div className="grid gap-4">
               <div className="flex items-center gap-2">
                 <CheckCircle className="text-green-500 h-5 w-5" />
                 <span className="font-semibold capitalize text-lg">
-                  {subscription.plan_id.replace("_", " ")}
+                  {profile.plan} Plan
                 </span>
               </div>
-              <div className="text-sm text-muted-foreground">
-                <p>
-                  PayPal Subscription ID: {subscription.paypal_subscription_id}
-                </p>
-                <p>
-                  Renews on:{" "}
-                  {new Date(
-                    subscription.current_period_end
-                  ).toLocaleDateString()}
-                </p>
-              </div>
+              {subscription && (
+                <div className="text-sm text-muted-foreground">
+                  <p>
+                    PayPal Subscription ID:{" "}
+                    {subscription.paypal_subscription_id}
+                  </p>
+                  <p>
+                    Renews on:{" "}
+                    {new Date(
+                      subscription.current_period_end
+                    ).toLocaleDateString()}
+                  </p>
+                </div>
+              )}
             </div>
           ) : (
             <div className="flex items-center gap-2 text-muted-foreground">

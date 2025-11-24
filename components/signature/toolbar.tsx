@@ -14,6 +14,7 @@ import {
   Wand2,
   Group,
   Ungroup,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -23,6 +24,11 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 interface ToolbarProps {
   onAddElement: (type: "text" | "image" | "social", preset?: any) => void;
@@ -35,6 +41,7 @@ interface ToolbarProps {
   setSnapToGrid: (snap: boolean) => void;
   onSave: () => void;
   onLoad: (id: string) => void;
+  onDeleteTemplate: (id: string) => void;
   savedSignatures: { id: string; name: string }[];
   onOpenWizard: () => void;
   selectedIds: string[];
@@ -51,6 +58,7 @@ export default function Toolbar({
   setShowGrid,
   onSave,
   onLoad,
+  onDeleteTemplate,
   savedSignatures,
   onOpenWizard,
   selectedIds,
@@ -229,30 +237,55 @@ export default function Toolbar({
             <TooltipContent side="right">Save Signature</TooltipContent>
           </Tooltip>
 
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className="relative">
-                <Button variant="ghost" size="icon">
-                  <FolderOpen size={20} />
-                </Button>
-                <select
-                  className="absolute inset-0 opacity-0 cursor-pointer"
-                  onChange={(e) => onLoad(e.target.value)}
-                  value=""
-                >
-                  <option value="" disabled>
-                    Load Signature
-                  </option>
-                  {savedSignatures?.map((sig) => (
-                    <option key={sig.id} value={sig.id}>
-                      {sig.name}
-                    </option>
-                  ))}
-                </select>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <FolderOpen size={20} />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="right">Load Template</TooltipContent>
+              </Tooltip>
+            </PopoverTrigger>
+            <PopoverContent side="right" className="w-64 p-2">
+              <div className="space-y-2">
+                <h4 className="font-medium text-sm px-2">Saved Templates</h4>
+                {savedSignatures.length === 0 ? (
+                  <p className="text-sm text-muted-foreground px-2">
+                    No saved templates
+                  </p>
+                ) : (
+                  <div className="space-y-1 max-h-64 overflow-y-auto">
+                    {savedSignatures.map((sig) => (
+                      <div
+                        key={sig.id}
+                        className="flex items-center justify-between gap-2 p-2 hover:bg-accent rounded-md group"
+                      >
+                        <button
+                          onClick={() => onLoad(sig.id)}
+                          className="flex-1 text-left text-sm truncate"
+                        >
+                          {sig.name}
+                        </button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onDeleteTemplate(sig.id);
+                          }}
+                        >
+                          <X size={14} />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-            </TooltipTrigger>
-            <TooltipContent side="right">Load Signature</TooltipContent>
-          </Tooltip>
+            </PopoverContent>
+          </Popover>
         </div>
 
         <div className="mt-auto flex flex-col gap-2">

@@ -264,20 +264,109 @@ export default function PropertiesPanel({
               </div>
             )}
 
-            {/* Content for Image */}
-            {selectedElement.type === "image" && (
-              <div className="space-y-2">
-                <Label>Image URL</Label>
-                <ImageUploader
-                  value={selectedElement.content}
-                  onChange={(url) => handleChange("content", url)}
-                />
-              </div>
+            {/* Content for Button */}
+            {selectedElement.type === "button" && (
+              <>
+                <div className="space-y-2">
+                  <Label>Button Text</Label>
+                  <Input
+                    value={selectedElement.content}
+                    onChange={(e) => handleChange("content", e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>URL</Label>
+                  <Input
+                    value={selectedElement.url || "#"}
+                    onChange={(e) => handleChange("url", e.target.value)}
+                  />
+                </div>
+              </>
             )}
 
-            {/* Typography (Text only) */}
-            {selectedElement.type === "text" && (
+            {/* Content for Image */}
+            {selectedElement.type === "image" && (
               <>
+                <div className="space-y-2">
+                  <Label>Image URL</Label>
+                  <ImageUploader
+                    value={selectedElement.content}
+                    onChange={(url) => handleChange("content", url)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Link URL (Optional)</Label>
+                  <Input
+                    value={selectedElement.url || ""}
+                    onChange={(e) => handleChange("url", e.target.value)}
+                    placeholder="https://"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Alt Text</Label>
+                  <Input
+                    value={selectedElement.alt || ""}
+                    onChange={(e) => handleChange("alt", e.target.value)}
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <div className="space-y-2 flex-1">
+                    <Label>Width (px/%)</Label>
+                    <Input
+                      value={selectedElement.style.width || ""}
+                      onChange={(e) =>
+                        handleStyleChange("width", e.target.value)
+                      }
+                      placeholder="Auto"
+                    />
+                  </div>
+                  <div className="space-y-2 flex-1">
+                    <Label>Height (px)</Label>
+                    <Input
+                      value={selectedElement.style.height || ""}
+                      onChange={(e) =>
+                        handleStyleChange("height", e.target.value)
+                      }
+                      placeholder="Auto"
+                    />
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* Typography (Text & Button) */}
+            {(selectedElement.type === "text" ||
+              selectedElement.type === "button") && (
+              <>
+                <div className="space-y-2">
+                  <Label>Font Family</Label>
+                  <Select
+                    value={
+                      selectedElement.style.fontFamily || "Arial, sans-serif"
+                    }
+                    onValueChange={(val) =>
+                      handleStyleChange("fontFamily", val)
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Arial, sans-serif">Arial</SelectItem>
+                      <SelectItem value="'Times New Roman', serif">
+                        Times New Roman
+                      </SelectItem>
+                      <SelectItem value="'Courier New', monospace">
+                        Courier New
+                      </SelectItem>
+                      <SelectItem value="Georgia, serif">Georgia</SelectItem>
+                      <SelectItem value="Verdana, sans-serif">
+                        Verdana
+                      </SelectItem>
+                      <SelectItem value="Tahoma, sans-serif">Tahoma</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
                 <div className="space-y-2">
                   <Label>Font Size</Label>
                   <Slider
@@ -295,7 +384,7 @@ export default function PropertiesPanel({
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Color</Label>
+                  <Label>Text Color</Label>
                   <Input
                     type="color"
                     value={selectedElement.style.color || "#000000"}
@@ -303,6 +392,22 @@ export default function PropertiesPanel({
                     className="h-9"
                   />
                 </div>
+                {selectedElement.type === "text" && (
+                  <div className="space-y-2">
+                    <Label>Line Height</Label>
+                    <Slider
+                      value={[
+                        parseFloat(selectedElement.style.lineHeight || "1.2"),
+                      ]}
+                      min={1}
+                      max={3}
+                      step={0.1}
+                      onValueChange={(vals) =>
+                        handleStyleChange("lineHeight", `${vals[0]}`)
+                      }
+                    />
+                  </div>
+                )}
                 <div className="space-y-2">
                   <Label>Style</Label>
                   <ToggleGroup type="multiple" className="justify-start">
@@ -368,6 +473,112 @@ export default function PropertiesPanel({
                   </ToggleGroup>
                 </div>
               </>
+            )}
+
+            {/* Button Specific Styles */}
+            {selectedElement.type === "button" && (
+              <>
+                <div className="space-y-2">
+                  <Label>Background Color</Label>
+                  <Input
+                    type="color"
+                    value={selectedElement.style.backgroundColor || "#000000"}
+                    onChange={(e) =>
+                      handleStyleChange("backgroundColor", e.target.value)
+                    }
+                    className="h-9"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Border Radius</Label>
+                  <Slider
+                    value={[
+                      parseInt(selectedElement.style.borderRadius || "4"),
+                    ]}
+                    min={0}
+                    max={50}
+                    step={1}
+                    onValueChange={(vals) =>
+                      handleStyleChange("borderRadius", `${vals[0]}px`)
+                    }
+                  />
+                </div>
+              </>
+            )}
+
+            {/* Divider Properties */}
+            {selectedElement.type === "divider" && (
+              <>
+                <div className="space-y-2">
+                  <Label>Line Color</Label>
+                  <Input
+                    type="color"
+                    value={selectedElement.style.borderColor || "#000000"}
+                    onChange={(e) =>
+                      handleStyleChange("borderColor", e.target.value)
+                    }
+                    className="h-9"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Thickness</Label>
+                  <Slider
+                    value={[parseInt(selectedElement.style.borderWidth || "1")]}
+                    min={1}
+                    max={10}
+                    step={1}
+                    onValueChange={(vals) =>
+                      handleStyleChange("borderWidth", `${vals[0]}px`)
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Width (%)</Label>
+                  <Slider
+                    value={[parseInt(selectedElement.style.width || "100")]}
+                    min={10}
+                    max={100}
+                    step={5}
+                    onValueChange={(vals) =>
+                      handleStyleChange("width", `${vals[0]}%`)
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Style</Label>
+                  <Select
+                    value={selectedElement.style.borderStyle || "solid"}
+                    onValueChange={(val) =>
+                      handleStyleChange("borderStyle", val)
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="solid">Solid</SelectItem>
+                      <SelectItem value="dashed">Dashed</SelectItem>
+                      <SelectItem value="dotted">Dotted</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </>
+            )}
+
+            {/* Spacer Properties */}
+            {selectedElement.type === "spacer" && (
+              <div className="space-y-2">
+                <Label>Height (px)</Label>
+                <Slider
+                  value={[parseInt(selectedElement.style.height || "20")]}
+                  min={5}
+                  max={200}
+                  step={5}
+                  onValueChange={(vals) =>
+                    handleStyleChange("height", `${vals[0]}px`)
+                  }
+                />
+              </div>
             )}
 
             {/* Common Element Styles */}

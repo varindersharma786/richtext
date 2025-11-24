@@ -6,8 +6,10 @@ import html2canvas from "html2canvas";
 import { createClient } from "@/utils/supabase/client";
 import Toolbar from "./toolbar";
 import PropertiesPanel from "./properties-panel";
+import StructurePanel from "./structure-panel";
 import { toast } from "sonner";
 import SignatureWizard from "./signature-wizard";
+import { canSaveTemplate, getUserPlan, getPlanLimits } from "@/lib/plan-utils";
 import {
   DndContext,
   closestCorners,
@@ -41,6 +43,9 @@ export default function SignatureBuilder() {
     { id: string; name: string }[]
   >([]);
   const [isWizardOpen, setIsWizardOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<"properties" | "layers">(
+    "properties"
+  );
   const [containerStyle, setContainerStyle] = useState<React.CSSProperties>({
     backgroundColor: "#ffffff",
     padding: "20px",
@@ -101,7 +106,7 @@ export default function SignatureBuilder() {
       if (!user) return;
 
       const { data, error } = await supabase
-        .from("saved_signatures")
+        .from("signature_templates")
         .select("id, name")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });
@@ -110,6 +115,89 @@ export default function SignatureBuilder() {
       if (data) setSavedSignatures(data);
     } catch (error) {
       console.error("Error fetching signatures:", error);
+      toast.error("Failed to load saved templates");
+    }
+  };
+
+  const handleSave = async () => {
+    try {
+      // Check if user can save
+      const saveCheck = await canSaveTemplate(supabase);
+      if (!saveCheck.allowed) {
+        toast.error(saveCheck.reason || "Cannot save template");
+        return;
+      }
+
+      // Prompt for template name
+      const name = prompt("Enter a name for this template:");
+      if (!name) return;
+
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error("Please sign in to save templates");
+        return;
+      }
+
+      // Save to database
+      const { error } = await supabase.from("signature_templates").insert({
+        user_id: user.id,
+        name,
+        data: rows,
+        container_style: containerStyle,
+      });
+
+      if (error) throw error;
+
+      toast.success(`Template "${name}" saved successfully!`);
+      fetchSavedSignatures();
+    } catch (error: any) {
+      console.error("Error saving signature:", error);
+      toast.error(error.message || "Failed to save template");
+    }
+  };
+
+  const handleLoad = async (id: string) => {
+    try {
+      const { data, error } = await supabase
+        .from("signature_templates")
+        .select("*")
+        .eq("id", id)
+        .single();
+
+      if (error) throw error;
+
+      if (data) {
+        setRows(data.data || []);
+        if (data.container_style) {
+          setContainerStyle(data.container_style);
+        }
+        toast.success(`Template "${data.name}" loaded!`);
+        localStorage.removeItem("unsavedSignatureGrid"); // Clear auto-save
+      }
+    } catch (error: any) {
+      console.error("Error loading signature:", error);
+      toast.error(error.message || "Failed to load template");
+    }
+  };
+
+  const handleDeleteTemplate = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this template?")) return;
+
+    try {
+      const { error } = await supabase
+        .from("signature_templates")
+        .delete()
+        .eq("id", id);
+
+      if (error) throw error;
+
+      toast.success("Template deleted");
+      fetchSavedSignatures();
+    } catch (error: any) {
+      console.error("Error deleting template:", error);
+      toast.error(error.message || "Failed to delete template");
     }
   };
 
@@ -323,7 +411,7 @@ export default function SignatureBuilder() {
   };
 
   const addElement = (
-    type: "text" | "image" | "social",
+    type: "text" | "image" | "social" | "spacer" | "divider" | "button",
     preset?: Partial<SignatureElement>
   ) => {
     const newElement: SignatureElement = {
@@ -334,6 +422,8 @@ export default function SignatureBuilder() {
           ? "New Text"
           : type === "image"
           ? "https://via.placeholder.com/150"
+          : type === "button"
+          ? "Click Me"
           : "",
       style: {
         fontSize: "16px",
@@ -344,6 +434,33 @@ export default function SignatureBuilder() {
       },
       ...preset,
     };
+
+    // Default styles for specific types
+    if (type === "divider") {
+      newElement.style = {
+        ...newElement.style,
+        width: "100%",
+        borderWidth: "1px",
+        borderColor: "#000000",
+        borderStyle: "solid",
+        padding: "10px 0",
+      };
+    } else if (type === "spacer") {
+      newElement.style = {
+        ...newElement.style,
+        height: "20px",
+      };
+    } else if (type === "button") {
+      newElement.style = {
+        ...newElement.style,
+        backgroundColor: "#000000",
+        color: "#ffffff",
+        borderRadius: "4px",
+        padding: "8px 16px",
+        textAlign: "left", // Container alignment
+      };
+      newElement.url = "#";
+    }
 
     // Add to the first column of the first row for now, or selected column if implemented
     if (rows.length > 0 && rows[0].columns.length > 0) {
@@ -504,8 +621,9 @@ export default function SignatureBuilder() {
         setShowGrid={() => {}}
         snapToGrid={true}
         setSnapToGrid={() => {}}
-        onSave={() => {}}
-        onLoad={() => {}}
+        onSave={handleSave}
+        onLoad={handleLoad}
+        onDeleteTemplate={handleDeleteTemplate}
         savedSignatures={savedSignatures}
         onOpenWizard={() => setIsWizardOpen(true)}
         selectedIds={selectedIds}
@@ -563,12 +681,47 @@ export default function SignatureBuilder() {
         </div>
       </div>
 
-      <PropertiesPanel
-        selectedElement={getSelectedItem()?.data} // Need to update PropertiesPanel to handle different types
-        onUpdate={updateItem}
-        containerStyle={containerStyle}
-        onContainerUpdate={setContainerStyle}
-      />
+      <div className="w-80 border-l border-border bg-card flex flex-col h-full">
+        <div className="flex border-b border-border">
+          <button
+            className={`flex-1 py-3 text-sm font-medium ${
+              activeTab === "properties"
+                ? "text-primary border-b-2 border-primary"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+            onClick={() => setActiveTab("properties")}
+          >
+            Properties
+          </button>
+          <button
+            className={`flex-1 py-3 text-sm font-medium ${
+              activeTab === "layers"
+                ? "text-primary border-b-2 border-primary"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+            onClick={() => setActiveTab("layers")}
+          >
+            Layers
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-hidden">
+          {activeTab === "properties" ? (
+            <PropertiesPanel
+              selectedElement={getSelectedItem()?.data}
+              onUpdate={updateItem}
+              containerStyle={containerStyle}
+              onContainerUpdate={setContainerStyle}
+            />
+          ) : (
+            <StructurePanel
+              rows={rows}
+              selectedIds={selectedIds}
+              onSelect={(id, multi) => setSelectedIds([id])}
+            />
+          )}
+        </div>
+      </div>
     </div>
   );
 }

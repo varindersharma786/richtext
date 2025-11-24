@@ -16,14 +16,17 @@ import {
 
 interface CanvasElementProps {
   id: string;
-  type: "text" | "image" | "social";
+  type: "text" | "image" | "social" | "spacer" | "divider" | "button";
   content: string;
   icon?: string;
+  url?: string;
   socialLinks?: any[];
   style: React.CSSProperties & {
     objectFit?: "cover" | "contain" | "fill";
     gap?: string;
     flexDirection?: "row" | "column";
+    width?: string;
+    height?: string;
   };
   position: { x: number; y: number };
   size: { width: number | string; height: number | string };
@@ -39,6 +42,7 @@ export default function CanvasElement({
   type,
   content,
   icon,
+  url,
   socialLinks,
   style,
   position,
@@ -159,10 +163,79 @@ export default function CanvasElement({
               icon &&
               renderSocialIcon(icon, style.color || "#000")}
           </div>
+        ) : type === "divider" ? (
+          <div
+            className="w-full flex items-center"
+            style={{
+              padding: style.padding,
+              height: "100%", // Ensure it takes full height of container if needed, or just auto
+            }}
+          >
+            <hr
+              style={{
+                width: style.width || "100%",
+                borderTopWidth: style.borderWidth || "1px",
+                borderTopColor: style.borderColor || "#000",
+                borderTopStyle: (style.borderStyle as any) || "solid",
+                margin: style.margin,
+              }}
+            />
+          </div>
+        ) : type === "spacer" ? (
+          <div
+            style={{
+              height: style.height || "20px",
+              width: "100%",
+              backgroundColor: "transparent", // Visible in edit mode?
+            }}
+            className="border border-dashed border-gray-200 opacity-50 relative group-hover:opacity-100 transition-opacity"
+          >
+            <span className="absolute inset-0 flex items-center justify-center text-[10px] text-gray-400 select-none">
+              Spacer ({style.height})
+            </span>
+          </div>
+        ) : type === "button" ? (
+          <div
+            className="w-full h-full flex"
+            style={{
+              justifyContent: style.textAlign || "left",
+              padding: style.padding,
+            }}
+          >
+            <a
+              href={url || "#"}
+              className="inline-block text-center no-underline"
+              style={{
+                backgroundColor: style.backgroundColor || "#000",
+                color: style.color || "#fff",
+                borderRadius: style.borderRadius || "4px",
+                padding: "8px 16px", // Internal padding
+                fontSize: style.fontSize || "14px",
+                fontWeight: style.fontWeight || "normal",
+                fontFamily: style.fontFamily || "Arial, sans-serif",
+                textDecoration: "none",
+                ...style, // Allow overrides
+                margin: undefined, // Reset container margin
+              }}
+              onClick={(e) => e.preventDefault()} // Prevent navigation in editor
+            >
+              {content}
+            </a>
+          </div>
         ) : (
           <div
             className="w-full h-full break-words whitespace-pre-wrap"
-            style={{ padding: style.padding }}
+            style={{
+              padding: style.padding,
+              fontFamily: style.fontFamily,
+              fontSize: style.fontSize,
+              fontWeight: style.fontWeight,
+              fontStyle: style.fontStyle,
+              textDecoration: style.textDecoration,
+              textAlign: style.textAlign,
+              lineHeight: style.lineHeight,
+              color: style.color,
+            }}
           >
             {content}
           </div>

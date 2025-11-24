@@ -2,10 +2,11 @@ import { CSSProperties } from "react";
 
 export interface SignatureElement {
     id: string;
-    type: "text" | "image" | "social" | "spacer";
+    type: "text" | "image" | "social" | "spacer" | "divider" | "button";
     content: any;
     icon?: string; // Legacy/Single icon
     url?: string;
+    alt?: string; // For images
     socialLinks?: SocialLink[];
     style: CSSProperties & {
         padding?: string;
@@ -13,12 +14,21 @@ export interface SignatureElement {
         borderRadius?: string;
         backgroundColor?: string;
         fontFamily?: string;
+        fontSize?: string;
+        fontWeight?: string;
+        fontStyle?: string;
+        textDecoration?: string;
+        textAlign?: "left" | "center" | "right";
+        lineHeight?: string;
+        color?: string;
         borderWidth?: string;
         borderColor?: string;
         borderStyle?: string;
         objectFit?: "cover" | "contain" | "fill";
         gap?: string;
         flexDirection?: "row" | "column";
+        width?: string; // Explicit width for dividers/images
+        height?: string; // Explicit height for spacers/images
     };
 }
 

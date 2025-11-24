@@ -46,8 +46,10 @@ export default function SortableColumn({
     <div
       ref={setNodeRef}
       style={style}
-      className={`min-h-[50px] border border-dashed border-gray-200 p-2 flex flex-col gap-2 ${
-        selectedIds.includes(column.id) ? "ring-2 ring-blue-500" : ""
+      className={`relative min-h-[50px] border border-dashed border-gray-200 hover:border-blue-300 p-2 flex flex-col gap-2 group/col ${
+        selectedIds.includes(column.id)
+          ? "ring-2 ring-blue-500 border-transparent"
+          : ""
       }`}
       onClick={(e) => {
         e.stopPropagation();
@@ -56,6 +58,11 @@ export default function SortableColumn({
       {...attributes}
       {...listeners}
     >
+      {/* Column Label */}
+      <div className="absolute left-0 -top-3 bg-gray-400 text-white text-[9px] px-1 rounded opacity-0 group-hover/col:opacity-100 transition-opacity pointer-events-none z-10">
+        Column
+      </div>
+
       <SortableContext
         items={column.elements.map((el) => el.id)}
         strategy={verticalListSortingStrategy}

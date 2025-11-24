@@ -49,10 +49,12 @@ export default async function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold capitalize">
-              {subscription ? subscription.plan_id.replace("_", " ") : "Free"}
+              {profile?.plan || "Free"}
             </div>
             <p className="text-xs text-muted-foreground">
-              {subscription ? "Manage in Subscription" : "Upgrade to Pro"}
+              {profile?.plan === "pro"
+                ? "Manage in Subscription"
+                : "Upgrade to Pro"}
             </p>
           </CardContent>
         </Card>

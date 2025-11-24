@@ -58,11 +58,12 @@ export default function SortableRow({
       }}
     >
       {/* Row Controls */}
-      <div className="absolute -left-8 top-0 bottom-0 w-8 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+      <div className="absolute -left-8 top-0 bottom-0 w-8 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20">
         <div
           {...attributes}
           {...listeners}
           className="cursor-move p-1 hover:bg-gray-100 rounded"
+          title="Drag Row"
         >
           <GripVertical size={16} className="text-gray-400" />
         </div>
@@ -74,9 +75,15 @@ export default function SortableRow({
             e.stopPropagation();
             onDeleteRow(row.id);
           }}
+          title="Delete Row"
         >
           <Trash2 size={14} />
         </Button>
+      </div>
+
+      {/* Row Label */}
+      <div className="absolute left-0 -top-3 bg-blue-500 text-white text-[10px] px-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+        Row
       </div>
 
       <div className="flex w-full" style={{ gap: row.style.gap }}>

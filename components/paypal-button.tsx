@@ -4,7 +4,6 @@ import { PayPalButtons, PayPalScriptProvider } from "@paypal/react-paypal-js";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Loader2 } from "lucide-react";
 
 interface PayPalButtonProps {
   planId: string;

@@ -15,6 +15,10 @@ import {
   Group,
   Ungroup,
   X,
+  AlertCircle,
+  Quote,
+  Video,
+  MapPin,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -209,6 +213,111 @@ export default function Toolbar({
               </Button>
             </TooltipTrigger>
             <TooltipContent side="right">Add Company</TooltipContent>
+          </Tooltip>
+        </div>
+
+        <Separator />
+
+        <div className="flex flex-col gap-2">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() =>
+                  onAddElement("text", {
+                    content:
+                      "Disclaimer: This message contains confidential information...",
+                    style: {
+                      fontSize: "10px",
+                      color: "#888888",
+                      fontStyle: "italic",
+                    },
+                  })
+                }
+              >
+                <AlertCircle size={20} />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="right">Add Disclaimer</TooltipContent>
+          </Tooltip>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() =>
+                  onAddElement("text", {
+                    content: '"Your favorite quote here"',
+                    style: {
+                      fontStyle: "italic",
+                      borderLeft: "2px solid #ccc",
+                      paddingLeft: "10px",
+                      color: "#555",
+                    },
+                  })
+                }
+              >
+                <Quote size={20} />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="right">Add Quote</TooltipContent>
+          </Tooltip>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() =>
+                  onAddElement("image", {
+                    content: "https://via.placeholder.com/600x100?text=Banner",
+                    style: { width: "100%", borderRadius: "4px" },
+                  })
+                }
+              >
+                <ImageIcon size={20} className="rotate-90" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="right">Add Banner</TooltipContent>
+          </Tooltip>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() =>
+                  onAddElement("image", {
+                    content:
+                      "https://via.placeholder.com/300x200?text=Video+Thumbnail",
+                    style: { borderRadius: "8px", border: "1px solid #ddd" },
+                  })
+                }
+              >
+                <Video size={20} />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="right">Add Video Thumbnail</TooltipContent>
+          </Tooltip>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() =>
+                  onAddElement("text", {
+                    content: "📍 123 Business Rd, Tech City, TC 90210",
+                    style: { fontSize: "12px", color: "#444" },
+                  })
+                }
+              >
+                <MapPin size={20} />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="right">Add Address</TooltipContent>
           </Tooltip>
         </div>
 

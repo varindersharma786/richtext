@@ -487,13 +487,17 @@ export default function SignatureBuilder() {
     }
   };
 
-  const addRow = () => {
+  const addRow = (cols: number = 2) => {
     const newRow: Row = {
       id: uuidv4(),
-      columns: [
-        { id: uuidv4(), width: 50, elements: [], style: { padding: "10px" } },
-        { id: uuidv4(), width: 50, elements: [], style: { padding: "10px" } },
-      ],
+      columns: Array(cols)
+        .fill(0)
+        .map(() => ({
+          id: uuidv4(),
+          width: 100 / cols,
+          elements: [],
+          style: { padding: "10px" },
+        })),
       style: { padding: "10px", gap: "10px" },
     };
     setRows([...rows, newRow]);
@@ -672,12 +676,35 @@ export default function SignatureBuilder() {
             </DragOverlay>
           </DndContext>
 
-          <button
-            onClick={addRow}
-            className="w-full py-2 mt-4 border-2 border-dashed border-gray-300 text-gray-400 hover:border-gray-400 hover:text-gray-500 rounded flex items-center justify-center"
-          >
-            + Add Row
-          </button>
+          <div className="mt-4 border-2 border-dashed border-gray-300 rounded p-4">
+            <p className="text-sm text-center text-muted-foreground mb-2">
+              Add Row
+            </p>
+            <div className="grid grid-cols-4 gap-2">
+              {[1, 2, 3, 4].map((cols) => (
+                <button
+                  key={cols}
+                  onClick={() => addRow(cols)}
+                  className="flex flex-col items-center justify-center gap-1 p-2 hover:bg-accent rounded border border-transparent hover:border-border transition-colors"
+                  title={`Add ${cols} Column${cols > 1 ? "s" : ""}`}
+                >
+                  <div className="flex gap-0.5 w-full h-6">
+                    {Array(cols)
+                      .fill(0)
+                      .map((_, i) => (
+                        <div
+                          key={i}
+                          className="bg-gray-300 flex-1 rounded-sm"
+                        ></div>
+                      ))}
+                  </div>
+                  <span className="text-xs text-muted-foreground">
+                    {cols} Col
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 

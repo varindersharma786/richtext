@@ -8,6 +8,7 @@ import Toolbar from "./toolbar";
 import CanvasElement from "./canvas-element";
 import PropertiesPanel from "./properties-panel";
 import { toast } from "sonner";
+import SignatureWizard from "./signature-wizard";
 
 export interface SocialLink {
   id: string;
@@ -26,6 +27,8 @@ export interface SignatureElement {
   url?: string;
   // New field for multi-social
   socialLinks?: SocialLink[];
+  // Grouping
+  groupId?: string;
   style: React.CSSProperties & {
     padding?: string;
     margin?: string;
@@ -38,6 +41,7 @@ export interface SignatureElement {
     objectFit?: "cover" | "contain" | "fill";
     gap?: string; // For social icons
     flexDirection?: "row" | "column"; // For social icons
+    zIndex?: number;
   };
   position: { x: number; y: number };
   size: { width: number | string; height: number | string };
@@ -59,7 +63,7 @@ interface DistanceLabel {
 
 export default function SignatureBuilder() {
   const [elements, setElements] = useState<SignatureElement[]>([]);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [showGrid, setShowGrid] = useState(true);
   const [snapToGrid, setSnapToGrid] = useState(true);
   const [savedSignatures, setSavedSignatures] = useState<
@@ -75,6 +79,7 @@ export default function SignatureBuilder() {
     borderColor: "#000000",
     borderStyle: "solid",
   });
+  const [isWizardOpen, setIsWizardOpen] = useState(false);
 
   const canvasRef = useRef<HTMLDivElement>(null);
   const supabase = createClient();
@@ -172,6 +177,7 @@ export default function SignatureBuilder() {
         objectFit: "cover",
         gap: "10px",
         flexDirection: "row",
+        zIndex: 1,
         ...preset?.style,
       },
       position: { x: 50, y: 50 },
@@ -182,13 +188,31 @@ export default function SignatureBuilder() {
       ...preset,
     };
     setElements([...elements, newElement]);
-    setSelectedId(newElement.id);
+    setSelectedIds([newElement.id]);
   };
 
   const updateElement = (id: string, updates: Partial<SignatureElement>) => {
-    // Intercept position updates for smart snapping
-    if (updates.position && selectedId === id) {
-      const activeEl = elements.find((el) => el.id === id);
+    // Handle Group Movement
+    const activeEl = elements.find((el) => el.id === id);
+    let elementsToUpdate = [id];
+    let deltaX = 0;
+    let deltaY = 0;
+
+    if (activeEl && activeEl.groupId && updates.position) {
+      // If moving a grouped element, move all others in the group
+      elementsToUpdate = elements
+        .filter((el) => el.groupId === activeEl.groupId)
+        .map((el) => el.id);
+      deltaX = updates.position.x - activeEl.position.x;
+      deltaY = updates.position.y - activeEl.position.y;
+    }
+
+    // Intercept position updates for smart snapping (only for the primary dragged element for now)
+    if (
+      updates.position &&
+      selectedIds.includes(id) &&
+      elementsToUpdate.length === 1
+    ) {
       if (activeEl) {
         const { x, y } = updates.position;
         const w =
@@ -403,13 +427,30 @@ export default function SignatureBuilder() {
     }
 
     setElements(
-      elements.map((el) => (el.id === id ? { ...el, ...updates } : el))
+      elements.map((el) => {
+        if (elementsToUpdate.includes(el.id)) {
+          if (el.id === id) {
+            return { ...el, ...updates };
+          } else {
+            // Apply delta to other group members
+            return {
+              ...el,
+              position: {
+                x: el.position.x + deltaX,
+                y: el.position.y + deltaY,
+              },
+            };
+          }
+        }
+        return el;
+      })
     );
   };
 
   const deleteElement = (id: string) => {
     setElements(elements.filter((el) => el.id !== id));
-    if (selectedId === id) setSelectedId(null);
+    if (selectedIds.includes(id))
+      setSelectedIds(selectedIds.filter((sid) => sid !== id));
   };
 
   const saveSignature = async (name: string) => {
@@ -551,7 +592,7 @@ export default function SignatureBuilder() {
     }
   };
 
-  const selectedElement = elements.find((el) => el.id === selectedId);
+  const selectedElement = elements.find((el) => selectedIds.includes(el.id));
 
   return (
     <div className="flex flex-1 border border-border rounded-lg overflow-hidden bg-background h-[calc(100vh-8rem)]">
@@ -569,11 +610,32 @@ export default function SignatureBuilder() {
         }
         onLoad={loadSignature}
         savedSignatures={savedSignatures}
+        onOpenWizard={() => setIsWizardOpen(true)}
+        selectedIds={selectedIds}
+        onGroup={() => {
+          if (selectedIds.length < 2) return;
+          const newGroupId = uuidv4();
+          setElements(
+            elements.map((el) =>
+              selectedIds.includes(el.id) ? { ...el, groupId: newGroupId } : el
+            )
+          );
+          toast.success("Elements grouped!");
+        }}
+        onUngroup={() => {
+          if (selectedIds.length === 0) return;
+          setElements(
+            elements.map((el) =>
+              selectedIds.includes(el.id) ? { ...el, groupId: undefined } : el
+            )
+          );
+          toast.success("Elements ungrouped!");
+        }}
       />
 
       <div
         className="flex-1 bg-gray-100 dark:bg-gray-800 p-8 flex items-center justify-center overflow-auto relative"
-        onClick={() => setSelectedId(null)}
+        onClick={() => setSelectedIds([])}
         onMouseUp={() => {
           setGuides([]);
           setDistances([]);
@@ -599,11 +661,30 @@ export default function SignatureBuilder() {
             <CanvasElement
               key={el.id}
               {...el}
-              isSelected={selectedId === el.id}
-              onSelect={setSelectedId}
+              isSelected={selectedIds.includes(el.id)}
+              onSelect={(id, multi) => {
+                if (multi) {
+                  setSelectedIds((prev) =>
+                    prev.includes(id)
+                      ? prev.filter((pid) => pid !== id)
+                      : [...prev, id]
+                  );
+                } else {
+                  // If selecting a grouped element, select all in group
+                  const clickedEl = elements.find((e) => e.id === id);
+                  if (clickedEl && clickedEl.groupId) {
+                    const groupIds = elements
+                      .filter((e) => e.groupId === clickedEl.groupId)
+                      .map((e) => e.id);
+                    setSelectedIds(groupIds);
+                  } else {
+                    setSelectedIds([id]);
+                  }
+                }
+              }}
               onUpdate={updateElement}
               onDelete={deleteElement}
-              gridSize={snapToGrid ? 20 : 1} // Use 1 if smart snap is active to allow smooth movement, or keep grid snap logic in Rnd
+              gridSize={snapToGrid ? 20 : 1}
             />
           ))}
 
@@ -643,6 +724,15 @@ export default function SignatureBuilder() {
         onUpdate={updateElement}
         containerStyle={containerStyle}
         onContainerUpdate={setContainerStyle}
+      />
+
+      <SignatureWizard
+        isOpen={isWizardOpen}
+        onClose={() => setIsWizardOpen(false)}
+        onGenerate={(newElements) => {
+          setElements(newElements);
+          toast.success("Signature generated!");
+        }}
       />
     </div>
   );

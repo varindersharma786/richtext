@@ -22,6 +22,8 @@ import {
   Trash2,
   ArrowRight,
   ArrowDown,
+  BringToFront,
+  SendToBack,
 } from "lucide-react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import ImageUploader from "@/components/admin/image-uploader";
@@ -314,6 +316,36 @@ export default function PropertiesPanel({
       <h3 className="font-semibold mb-6">Properties</h3>
 
       <div className="space-y-6">
+        {/* Layering */}
+        <div className="space-y-2">
+          <Label>Layering</Label>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex-1"
+              onClick={() =>
+                handleChange("zIndex", (selectedElement.style.zIndex || 1) + 1)
+              }
+            >
+              <BringToFront size={14} className="mr-2" /> Forward
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex-1"
+              onClick={() =>
+                handleChange(
+                  "zIndex",
+                  Math.max((selectedElement.style.zIndex || 1) - 1, 0)
+                )
+              }
+            >
+              <SendToBack size={14} className="mr-2" /> Backward
+            </Button>
+          </div>
+        </div>
+
         {/* Dimensions & Aspect Ratio */}
         <div className="space-y-2">
           <Label>Dimensions</Label>

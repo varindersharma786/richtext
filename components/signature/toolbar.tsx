@@ -11,6 +11,9 @@ import {
   User,
   Briefcase,
   Building,
+  Wand2,
+  Group,
+  Ungroup,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -33,6 +36,10 @@ interface ToolbarProps {
   onSave: () => void;
   onLoad: (id: string) => void;
   savedSignatures: { id: string; name: string }[];
+  onOpenWizard: () => void;
+  selectedIds: string[];
+  onGroup: () => void;
+  onUngroup: () => void;
 }
 
 export default function Toolbar({
@@ -45,10 +52,34 @@ export default function Toolbar({
   onSave,
   onLoad,
   savedSignatures,
+  onOpenWizard,
+  selectedIds,
+  onGroup,
+  onUngroup,
 }: ToolbarProps) {
   return (
     <aside className="w-16 border-r border-border bg-card flex flex-col items-center py-4 gap-4 z-10">
       <TooltipProvider delayDuration={0}>
+        <div className="flex flex-col gap-2">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-primary hover:text-primary hover:bg-primary/10"
+                onClick={onOpenWizard}
+              >
+                <Wand2 size={24} />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="right">
+              Signature Wizard (Easy Mode)
+            </TooltipContent>
+          </Tooltip>
+        </div>
+
+        <Separator />
+
         <div className="flex flex-col gap-2">
           <Tooltip>
             <TooltipTrigger asChild>
@@ -91,6 +122,31 @@ export default function Toolbar({
         </div>
 
         <Separator />
+
+        {/* Grouping Controls */}
+        {selectedIds && selectedIds.length > 0 && (
+          <div className="flex flex-col gap-2 animate-in fade-in zoom-in duration-200">
+            {selectedIds.length > 1 && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" onClick={onGroup}>
+                    <Group size={20} />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="right">Group Selected</TooltipContent>
+              </Tooltip>
+            )}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon" onClick={onUngroup}>
+                  <Ungroup size={20} />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="right">Ungroup</TooltipContent>
+            </Tooltip>
+            <Separator />
+          </div>
+        )}
 
         <div className="flex flex-col gap-2">
           <Tooltip>

@@ -28,7 +28,7 @@ interface CanvasElementProps {
   position: { x: number; y: number };
   size: { width: number | string; height: number | string };
   isSelected: boolean;
-  onSelect: (id: string) => void;
+  onSelect: (id: string, multi?: boolean) => void;
   onUpdate: (id: string, updates: any) => void;
   onDelete: (id: string) => void;
   gridSize: number;
@@ -90,7 +90,7 @@ export default function CanvasElement({
       }}
       onDrag={(e, d) => {
         // Optional: Real-time updates for smoother guides, but might be performance heavy
-        onUpdate(id, { position: { x: d.x, y: d.y } })
+        onUpdate(id, { position: { x: d.x, y: d.y } });
       }}
       onResizeStop={(e, direction, ref, delta, position) => {
         onUpdate(id, {
@@ -106,9 +106,9 @@ export default function CanvasElement({
           ? "ring-2 ring-primary"
           : "hover:ring-1 hover:ring-primary/50"
       }`}
-      onClick={(e: { stopPropagation: () => void; }) => {
+      onClick={(e: React.MouseEvent) => {
         e.stopPropagation();
-        onSelect(id);
+        onSelect(id, e.shiftKey);
       }}
     >
       <div className="w-full h-full relative" style={{ ...style, padding: 0 }}>

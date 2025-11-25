@@ -1,11 +1,12 @@
 // components/store/FeaturedProducts.tsx
-import { createAdminClient } from "@/utils/supabase/admin";
+
 import ProductCard from "./ProductCard";
 import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
 import { motion } from "framer-motion";
+import { createClient } from "@/utils/supabase/client";
 
-const supabase = createAdminClient();
+const supabase = createClient();
 
 async function getFeaturedProducts() {
   const { data } = await supabase

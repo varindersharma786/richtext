@@ -4,18 +4,20 @@ import ProductGallery from "@/components/product/ProductGallery";
 import ProductInfo from "@/components/product/ProductInfo";
 import ProductTabs from "@/components/product/ProductTabs";
 import RelatedProducts from "@/components/product/RelatedProducts";
+import { createAdminClient } from "@/utils/supabase/admin";
 import { notFound } from "next/navigation";
-import { createClient } from "@/utils/supabase/client";
 
-const supabase = createClient();
+
+const supabase = createAdminClient();
 
 async function getProduct(id: string) {
+    console.log(id,"this is id");
   const { data, error } = await supabase
     .from("products")
     .select("*")
     .eq("id", id)
     .single();
-
+console.log(data,"this is data");   
   if (error || !data || !data.is_active) notFound();
   return data;
 }
@@ -30,9 +32,14 @@ async function getRelatedProducts(currentId: string) {
   return data || [];
 }
 
-export default async function ProductPage({ params }: { params: { id: string } }) {
-  const product = await getProduct(params.id);
-  const related = await getRelatedProducts(params.id);
+ const ProductPage= async({
+  params,
+}: {
+  params: Promise<{ id: string }>
+})=> {
+     const { id } = await params
+  const product = await getProduct(id);
+  const related = await getRelatedProducts(id);
 
   return (
     <>
@@ -56,3 +63,4 @@ export default async function ProductPage({ params }: { params: { id: string } }
     </>
   );
 }
+export default ProductPage;

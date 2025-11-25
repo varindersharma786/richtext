@@ -10,10 +10,9 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, MoreHorizontal, Plus } from "lucide-react";
-import Image from "next/image";
+import { Search, Eye } from "lucide-react";
 
-export default async function AdminProductsPage() {
+export default async function AdminOrdersPage() {
   const supabase = await createClient();
 
   const {
@@ -34,33 +33,49 @@ export default async function AdminProductsPage() {
     return redirect("/dashboard");
   }
 
-  // Fetch products
-  const { data: products } = await supabase
-    .from("products")
-    .select("*")
-    .order("created_at", { ascending: false });
+  // Mock orders for now
+  const orders = [
+    {
+      id: "ORD-001",
+      customer: "Alice Johnson",
+      date: "2023-10-25",
+      total: "₹4,500",
+      status: "Completed",
+    },
+    {
+      id: "ORD-002",
+      customer: "Bob Smith",
+      date: "2023-10-26",
+      total: "₹1,200",
+      status: "Processing",
+    },
+    {
+      id: "ORD-003",
+      customer: "Charlie Brown",
+      date: "2023-10-27",
+      total: "₹8,900",
+      status: "Pending",
+    },
+  ];
 
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-3xl font-bold tracking-tight text-taupe-900 dark:text-white">
-            Products
+            Orders
           </h2>
           <p className="text-muted-foreground">
-            Manage your product inventory.
+            View and manage customer orders.
           </p>
         </div>
-        <Button className="bg-taupe-900 hover:bg-taupe-800 text-white gap-2">
-          <Plus className="w-4 h-4" /> Add Product
-        </Button>
       </div>
 
       <div className="flex items-center gap-4">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input
-            placeholder="Search products..."
+            placeholder="Search orders..."
             className="pl-10 bg-white dark:bg-neutral-900 border-gray-200 dark:border-neutral-800"
           />
         </div>
@@ -70,58 +85,41 @@ export default async function AdminProductsPage() {
         <Table>
           <TableHeader className="bg-gray-50 dark:bg-neutral-800/50">
             <TableRow>
-              <TableHead className="w-[100px]">Image</TableHead>
-              <TableHead>Name</TableHead>
-              <TableHead>Price</TableHead>
-              <TableHead>Stock</TableHead>
+              <TableHead>Order ID</TableHead>
+              <TableHead>Customer</TableHead>
+              <TableHead>Date</TableHead>
+              <TableHead>Total</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {products?.map((product) => (
-              <TableRow key={product.id}>
-                <TableCell>
-                  <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-gray-100">
-                    <Image
-                      src={product.image_url || "/placeholder.jpg"}
-                      alt={product.name}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                </TableCell>
-                <TableCell className="font-medium">{product.name}</TableCell>
-                <TableCell>₹{product.price}</TableCell>
-                <TableCell>{product.stock}</TableCell>
+            {orders.map((order) => (
+              <TableRow key={order.id}>
+                <TableCell className="font-medium">{order.id}</TableCell>
+                <TableCell>{order.customer}</TableCell>
+                <TableCell>{order.date}</TableCell>
+                <TableCell>{order.total}</TableCell>
                 <TableCell>
                   <span
                     className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      product.stock > 0
+                      order.status === "Completed"
                         ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
-                        : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
+                        : order.status === "Processing"
+                          ? "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400"
+                          : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400"
                     }`}
                   >
-                    {product.stock > 0 ? "In Stock" : "Out of Stock"}
+                    {order.status}
                   </span>
                 </TableCell>
                 <TableCell className="text-right">
                   <Button variant="ghost" size="icon">
-                    <MoreHorizontal className="w-4 h-4" />
+                    <Eye className="w-4 h-4" />
                   </Button>
                 </TableCell>
               </TableRow>
             ))}
-            {(!products || products.length === 0) && (
-              <TableRow>
-                <TableCell
-                  colSpan={6}
-                  className="text-center py-8 text-muted-foreground"
-                >
-                  No products found.
-                </TableCell>
-              </TableRow>
-            )}
           </TableBody>
         </Table>
       </div>

@@ -14,13 +14,13 @@ async function getAllProducts() {
     .select("id, name, price, image_url, stock, is_active")
     .eq("is_active", true)
     .order("created_at", { ascending: false });
-
+console.log(data,"this is data");
   return data || [];
 }
 
 export default async function ProductsPage() {
   const products = await getAllProducts();
-
+console.log(products,"this is products");
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Header */}

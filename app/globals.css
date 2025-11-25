@@ -42,6 +42,17 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+  --color-taupe-50: var(--taupe-50);
+  --color-taupe-100: var(--taupe-100);
+  --color-taupe-200: var(--taupe-200);
+  --color-taupe-300: var(--taupe-300);
+  --color-taupe-400: var(--taupe-400);
+  --color-taupe-500: var(--taupe-500);
+  --color-taupe-600: var(--taupe-600);
+  --color-taupe-700: var(--taupe-700);
+  --color-taupe-800: var(--taupe-800);
+  --color-taupe-900: var(--taupe-900);
+  --color-taupe-950: var(--taupe-950);
 }
 
 :root {
@@ -77,6 +88,17 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+  --taupe-50: oklch(0.98 0.01 80);
+  --taupe-100: oklch(0.95 0.02 80);
+  --taupe-200: oklch(0.9 0.03 80);
+  --taupe-300: oklch(0.8 0.04 80);
+  --taupe-400: oklch(0.7 0.05 80);
+  --taupe-500: oklch(0.6 0.06 80);
+  --taupe-600: oklch(0.5 0.06 80);
+  --taupe-700: oklch(0.4 0.06 80);
+  --taupe-800: oklch(0.3 0.05 80);
+  --taupe-900: oklch(0.2 0.04 80);
+  --taupe-950: oklch(0.1 0.03 80);
 }
 
 .dark {

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Upload, X } from "lucide-react";
@@ -25,9 +25,9 @@ import { toast } from "sonner";
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   description: z.string().optional(),
-  price: z.coerce.number().positive("Price must be positive"),
-  stock: z.coerce.number().int().min(0, "Stock cannot be negative"),
-  is_active: z.boolean().default(true),
+  price: z.number().positive("Price must be positive"),
+  stock: z.number().int().min(0, "Stock cannot be negative"),
+  is_active: z.boolean(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -83,7 +83,7 @@ export default function ProductForm({ product }: { product?: Product }) {
     setImagePreview(null);
   };
 
-  const onSubmit = async (values: FormValues) => {
+  const onSubmit: SubmitHandler<FormValues> = async (values) => {
     try {
       setUploading(true);
       let imageUrl = product?.image_url || null;
@@ -187,6 +187,9 @@ export default function ProductForm({ product }: { product?: Product }) {
                             step="0.01"
                             placeholder="999"
                             {...field}
+                            onChange={(e) =>
+                              field.onChange(parseFloat(e.target.value) || 0)
+                            }
                           />
                         </FormControl>
                         <FormMessage />
@@ -201,7 +204,14 @@ export default function ProductForm({ product }: { product?: Product }) {
                       <FormItem>
                         <FormLabel>Stock Quantity</FormLabel>
                         <FormControl>
-                          <Input type="number" placeholder="50" {...field} />
+                          <Input
+                            type="number"
+                            placeholder="50"
+                            {...field}
+                            onChange={(e) =>
+                              field.onChange(parseInt(e.target.value, 10) || 0)
+                            }
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>

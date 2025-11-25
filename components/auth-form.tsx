@@ -15,8 +15,15 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@radix-ui/react-tooltip";
 
 export default function AuthForm() {
+  const router = useRouter();
   const supabase = createClient();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -29,7 +36,7 @@ export default function AuthForm() {
     } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "SIGNED_IN") {
         // handle sign in
-        window.location.href = "/dashboard";
+        router.push("/dashboard");
       }
     });
 
@@ -90,12 +97,22 @@ export default function AuthForm() {
           Enter your email below to login to your account
         </CardDescription>
         <CardAction>
-          <Button variant="link">Sign Up</Button>
+          <Tooltip>
+            <TooltipTrigger>
+              <Button variant="link" className="cursor-pointer"  onClick={() => router.push("/register")}>
+                Sign Up
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Don't have an account?</p>
+            </TooltipContent>
+          </Tooltip>
         </CardAction>
       </CardHeader>
       <CardContent>
         <h2 className="text-2xl font-bold text-center mb-4">Login</h2>
-        <form onSubmit={handleEmailLogin} className="flex flex-col gap-3">
+        <form id="login-form"  className="flex flex-col gap-3">
+         
           <Label htmlFor="email">Email</Label>
           <Input
             type="email"
@@ -123,6 +140,7 @@ export default function AuthForm() {
           disabled={loading}
           variant={"outline"}
           className="w-full"
+          form="login-form"
         >
           Sign In
         </Button>

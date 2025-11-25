@@ -35,6 +35,17 @@ export default function AdminSidebar() {
         </Link>
 
         <Link
+          href="/admin/products"
+          className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+            isActive("/admin/products")
+              ? "bg-blue-600 text-white"
+              : "text-gray-400 hover:bg-gray-800 hover:text-white"
+          }`}
+        >
+          <PlusCircle size={20} />
+          Products
+        </Link>
+        <Link
           href="/admin/users"
           className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
             isActive("/admin/users")

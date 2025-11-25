@@ -1,37 +1,41 @@
-// app/api/checkout/route.ts
-import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/utils/supabase/server';
-import { razorpay } from '@/lib/razorpay';
+import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@/utils/supabase/server";
 
 export async function POST(req: NextRequest) {
-  const { items, userId } = await req.json();
+  const { items, userId, paymentId, provider = "paypal" } = await req.json();
   const supabase = await createClient();
 
   // Verify user
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user || user.id !== userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user || user.id !== userId)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const totalAmount = items.reduce((sum: number, item: any) => sum + item.price * item.quantity, 0);
-
-  const order = await razorpay.orders.create({
-    amount: totalAmount * 100, // paise
-    currency: 'INR',
-    receipt: `receipt_${Date.now()}`,
-  });
+  const totalAmount = items.reduce(
+    (sum: number, item: any) => sum + item.price * item.quantity,
+    0
+  );
 
   // Save order in DB
-  const { data: dbOrder } = await supabase
-    .from('orders')
+  const { data: dbOrder, error } = await supabase
+    .from("orders")
     .insert({
       user_id: userId,
-      razorpay_order_id: order.id,
+      payment_provider: provider,
+      payment_id: paymentId, // PayPal Order ID
       amount: totalAmount,
+      status: "paid", // Assuming this is called after successful payment
     })
     .select()
     .single();
 
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
   // Save order items
-  await supabase.from('order_items').insert(
+  await supabase.from("order_items").insert(
     items.map((item: any) => ({
       order_id: dbOrder.id,
       product_id: item.product_id,
@@ -40,5 +44,5 @@ export async function POST(req: NextRequest) {
     }))
   );
 
-  return NextResponse.json({ orderId: order.id, amount: order.amount });
+  return NextResponse.json({ orderId: dbOrder.id, success: true });
 }

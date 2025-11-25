@@ -1,94 +1,75 @@
-// app/products/page.tsx
-
 import FiltersSidebar from "@/components/store/FiltersSidebar";
 import MobileFilters from "@/components/store/MobileFilters";
-import ProductCard from "@/components/store/ProductCard";
-import { createClient } from "@/utils/supabase/client";
+import ProductGrid from "@/components/product/ProductGrid";
+import { createClient } from "@/utils/supabase/server";
 import { Suspense } from "react";
 
-const supabase = createClient();
+export default async function ProductsPage() {
+  const supabase = await createClient();
 
-async function getAllProducts() {
-  const { data } = await supabase
+  const { data: products } = await supabase
     .from("products")
     .select("id, name, price, image_url, stock, is_active")
     .eq("is_active", true)
     .order("created_at", { ascending: false });
-console.log(data,"this is data");
-  return data || [];
-}
 
-export default async function ProductsPage() {
-  const products = await getAllProducts();
-console.log(products,"this is products");
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       {/* Hero Header */}
-      <section className="relative bg-gradient-to-br from-purple-900 via-black to-blue-900 text-white py-32">
+      <section className="relative bg-taupe-900 text-white py-24">
         <div className="container mx-auto px-6 text-center">
-          <h1 className="text-6xl md:text-8xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-pink-300 to-purple-300">
+          <h1 className="text-5xl md:text-7xl font-bold mb-6 tracking-tight">
             All Products
           </h1>
-          <p className="text-xl md:text-2xl text-gray-200 max-w-2xl mx-auto">
-            {products.length} premium items • New drops weekly
+          <p className="text-xl text-taupe-100 max-w-2xl mx-auto font-light">
+            Explore our latest collection of premium essentials.
           </p>
         </div>
       </section>
 
-      <div className="container mx-auto px-6 max-w-7xl -mt-16 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+      <div className="container mx-auto px-6 max-w-7xl py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-12">
           {/* Desktop Filters */}
-          <div className="hidden lg:block">
+          <div className="hidden lg:block sticky top-24 h-fit">
             <Suspense fallback={<div>Loading filters...</div>}>
-              <FiltersSidebar products={products} />
+              <FiltersSidebar products={products || []} />
             </Suspense>
           </div>
 
           {/* Product Grid */}
           <div className="lg:col-span-3">
-            {/* Mobile Filters Trigger */}
-            <div className="lg:hidden mb-6">
-              <MobileFilters products={products} />
-            </div>
-
-            {/* Sort & Count */}
-            <div className="flex justify-between items-center mb-8">
-              <p className="text-gray-600">
-                Showing <span className="font-bold">{products.length}</span> products
-              </p>
-              <select className="px-6 py-3 rounded-xl border bg-white shadow-sm">
-                <option>Latest First</option>
-                <option>Price: Low to High</option>
-                <option>Price: High to Low</option>
-                <option>Best Selling</option>
-              </select>
-            </div>
-
-            {/* Grid */}
-            {products.length === 0 ? (
-              <div className="text-center py-20">
-                <p className="text-2xl text-gray-500">No products found</p>
+            {/* Mobile Filters Trigger & Sort */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+              <div className="lg:hidden w-full sm:w-auto">
+                <MobileFilters products={products || []} />
               </div>
-            ) : (
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-6 md:gap-8">
-                {products.map((product, i) => (
-                  <div
-                    key={product.id}
-                    className="animate-in fade-in slide-in-from-bottom-4"
-                    style={{ animationDelay: `${i * 50}ms` }}
-                  >
-                    <ProductCard product={product} />
-                  </div>
-                ))}
+
+              <div className="flex items-center justify-between w-full sm:w-auto gap-4">
+                <p className="text-gray-500 text-sm">
+                  Showing{" "}
+                  <span className="font-semibold text-gray-900">
+                    {products?.length || 0}
+                  </span>{" "}
+                  results
+                </p>
+                <select className="px-4 py-2 rounded-lg border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-taupe-200">
+                  <option>Newest First</option>
+                  <option>Price: Low to High</option>
+                  <option>Price: High to Low</option>
+                </select>
+              </div>
+            </div>
+
+            <ProductGrid products={products || []} />
+
+            {/* Load More (Placeholder) */}
+            {products && products.length > 0 && (
+              <div className="text-center mt-16">
+                <button className="px-8 py-3 border border-gray-200 rounded-full text-sm font-medium hover:bg-gray-50 transition-colors">
+                  Load More
+                </button>
               </div>
             )}
-
-            {/* Load More (optional) */}
-            <div className="text-center mt-16">
-              <button className="px-12 py-5 bg-black text-white rounded-full font-semibold hover:bg-gray-800 transition text-lg">
-                Load More Products
-              </button>
-            </div>
           </div>
         </div>
       </div>

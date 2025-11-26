@@ -1,31 +1,31 @@
-import { createClient } from '@/utils/supabase/server'
-import Link from 'next/link'
-import { PlusCircle, Edit } from 'lucide-react'
-import { revalidatePath } from 'next/cache'
-import DeletePostButton from '@/components/admin/delete-post-button'
+import { createClient } from "@/utils/supabase/server";
+import Link from "next/link";
+import { PlusCircle, Edit } from "lucide-react";
+import { revalidatePath } from "next/cache";
+import DeletePostButton from "@/components/admin/delete-post-button";
 
 export default async function AdminPostsPage() {
-  const supabase = await createClient()
+  const supabase = await createClient();
 
   const { data: posts } = await supabase
-    .from('posts')
-    .select('*')
-    .order('created_at', { ascending: false })
+    .from("posts")
+    .select("*")
+    .order("created_at", { ascending: false });
 
   const deletePost = async (formData: FormData) => {
-    'use server'
-    const id = formData.get('id') as string
-    const supabase = await createClient()
-    await supabase.from('posts').delete().eq('id', id)
-    revalidatePath('/admin/posts')
-  }
+    "use server";
+    const id = formData.get("id") as string;
+    const supabase = await createClient();
+    await supabase.from("posts").delete().eq("id", id);
+    revalidatePath("/admin/blogs");
+  };
 
   return (
     <div>
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-3xl font-bold">Blog Posts</h1>
         <Link
-          href="/admin/posts/new"
+          href="/admin/blogs/new"
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
         >
           <PlusCircle size={20} />
@@ -66,11 +66,11 @@ export default async function AdminPostsPage() {
                   <span
                     className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                       post.published
-                        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                        : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                        ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                        : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
                     }`}
                   >
-                    {post.published ? 'Published' : 'Draft'}
+                    {post.published ? "Published" : "Draft"}
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
@@ -79,7 +79,7 @@ export default async function AdminPostsPage() {
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <div className="flex items-center justify-end gap-3">
                     <Link
-                      href={`/admin/posts/${post.id}/edit`} // Assuming edit page exists or will be created
+                      href={`/admin/blogs/${post.id}/edit`} // Assuming edit page exists or will be created
                       className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
                     >
                       <Edit size={18} />
@@ -94,7 +94,10 @@ export default async function AdminPostsPage() {
             ))}
             {posts?.length === 0 && (
               <tr>
-                <td colSpan={4} className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                <td
+                  colSpan={4}
+                  className="px-6 py-4 text-center text-gray-500 dark:text-gray-400"
+                >
                   No posts found. Create one to get started.
                 </td>
               </tr>
@@ -103,5 +106,5 @@ export default async function AdminPostsPage() {
         </table>
       </div>
     </div>
-  )
+  );
 }

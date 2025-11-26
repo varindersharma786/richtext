@@ -62,9 +62,9 @@ export default function AdminSidebar() {
         </div>
 
         <Link
-          href="/admin/posts"
+          href="/admin/blogs"
           className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-            isActive("/admin/posts")
+            isActive("/admin/blogs")
               ? "bg-blue-600 text-white"
               : "text-gray-400 hover:bg-gray-800 hover:text-white"
           }`}
@@ -74,9 +74,9 @@ export default function AdminSidebar() {
         </Link>
 
         <Link
-          href="/admin/posts/new"
+          href="/admin/blogs/new"
           className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-            isActive("/admin/posts/new")
+            isActive("/admin/blogs/new")
               ? "bg-blue-600 text-white"
               : "text-gray-400 hover:bg-gray-800 hover:text-white"
           }`}

@@ -1,5 +1,4 @@
-import Header from "@/components/header";
-import Footer from "@/components/footer";
+
 import Link from "next/link";
 import Image from "next/image";
 import { createClient } from "@/utils/supabase/server";

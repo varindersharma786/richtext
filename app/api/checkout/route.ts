@@ -23,9 +23,9 @@ export async function POST(req: NextRequest) {
     .insert({
       user_id: userId,
       payment_provider: provider,
-      payment_id: paymentId, // PayPal Order ID
+      payment_id: paymentId,
       amount: totalAmount,
-      status: "paid", // Assuming this is called after successful payment
+      status: "paid",
     })
     .select()
     .single();

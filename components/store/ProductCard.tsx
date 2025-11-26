@@ -11,6 +11,10 @@ import { useCart } from "@/hooks/use-cart";
 export default function ProductCard({ product }: { product: any }) {
   const { addToCart } = useCart();
 
+  // Get first image from image_urls or fallback to image_url
+  const imageUrl =
+    product.image_urls?.[0] || product.image_url || "/placeholder.jpg";
+
   return (
     <motion.div
       whileHover={{ y: -12, transition: { duration: 0.3 } }}
@@ -28,7 +32,7 @@ export default function ProductCard({ product }: { product: any }) {
         <Link href={`/product/${product.id}`}>
           <div className="aspect-square relative overflow-hidden bg-gray-100">
             <Image
-              src={product.image_url || "/placeholder.jpg"}
+              src={imageUrl}
               alt={product.name}
               fill
               className="object-cover transition-transform duration-700 group-hover:scale-110"
@@ -42,7 +46,9 @@ export default function ProductCard({ product }: { product: any }) {
         </Link>
 
         <div className="p-6">
-          <h3 className="font-semibold text-lg mb-2 line-clamp-2">{product.name}</h3>
+          <h3 className="font-semibold text-lg mb-2 line-clamp-2">
+            {product.name}
+          </h3>
           <div className="flex items-center justify-between">
             <p className="text-2xl font-bold text-purple-600">
               ₹{Number(product.price).toLocaleString("en-IN")}

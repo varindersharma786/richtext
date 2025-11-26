@@ -1,29 +1,51 @@
-// app/(admin)/products/[id]/page.tsx
-import { createAdminClient } from "@/utils/supabase/admin";
 import ProductForm from "@/components/admin/products/ProductForm";
-import { notFound } from "next/navigation";
+import { createClient } from "@/utils/supabase/server";
+import { redirect, notFound } from "next/navigation";
 
-const supabase = createAdminClient();
+export default async function EditProductPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  const supabase = await createClient();
 
-async function getProduct(id: string) {
-  const { data, error } = await supabase
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return redirect("/login");
+  }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  if (profile?.role !== "admin") {
+    return redirect("/dashboard");
+  }
+
+  // Fetch product
+  const { data: product, error } = await supabase
     .from("products")
     .select("*")
     .eq("id", id)
     .single();
 
-  if (error || !data) notFound();
-  return data;
-}
-
-export default async function EditProductPage({ params }: { params: { id: string } }) {
-  const product = await getProduct(params.id);
+  if (error || !product) {
+    notFound();
+  }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
+    <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Edit Product</h1>
-        <p className="text-muted-foreground">Update product details</p>
+        <h2 className="text-3xl font-bold tracking-tight">Edit Product</h2>
+        <p className="text-muted-foreground">
+          Update product details and images.
+        </p>
       </div>
       <ProductForm product={product} />
     </div>

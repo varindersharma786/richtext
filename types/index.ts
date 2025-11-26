@@ -23,6 +23,7 @@ export type Database = {
                     description: string | null;
                     price: number;
                     image_url: string | null;
+                    image_urls: string[] | null;
                     stock: number;
                     is_active: boolean;
                 };
@@ -33,6 +34,8 @@ export type Database = {
                     user_id: string;
                     razorpay_order_id: string;
                     razorpay_payment_id: string | null;
+                    payment_provider: string;
+                    payment_id: string | null;
                     amount: number;
                     status: 'created' | 'paid' | 'failed';
                     created_at: string;

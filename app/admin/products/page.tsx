@@ -10,8 +10,10 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, MoreHorizontal, Plus } from "lucide-react";
+import { Search, Plus } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
+import ProductActions from "@/components/admin/products/ProductActions";
 
 export default async function AdminProductsPage() {
   const supabase = await createClient();
@@ -51,9 +53,11 @@ export default async function AdminProductsPage() {
             Manage your product inventory.
           </p>
         </div>
-        <Button className="bg-taupe-900 hover:bg-taupe-800 text-white gap-2">
-          <Plus className="w-4 h-4" /> Add Product
-        </Button>
+        <Link href="/admin/products/new">
+          <Button className="bg-taupe-900 hover:bg-taupe-800 text-white gap-2">
+            <Plus className="w-4 h-4" /> Add Product
+          </Button>
+        </Link>
       </div>
 
       <div className="flex items-center gap-4">
@@ -79,46 +83,47 @@ export default async function AdminProductsPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {products?.map((product) => (
-              <TableRow key={product.id}>
-                <TableCell>
-                  <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-gray-100">
-                    <Image
-                      src={product.image_url || "/placeholder.jpg"}
-                      alt={product.name}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                </TableCell>
-                <TableCell className="font-medium">{product.name}</TableCell>
-                <TableCell>₹{product.price}</TableCell>
-                <TableCell>{product.stock}</TableCell>
-                <TableCell>
-                  <span
-                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      product.stock > 0
-                        ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
-                        : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
-                    }`}
-                  >
-                    {product.stock > 0 ? "In Stock" : "Out of Stock"}
-                  </span>
-                </TableCell>
-                <TableCell className="text-right">
-                  <Button variant="ghost" size="icon">
-                    <MoreHorizontal className="w-4 h-4" />
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
+            {products?.map((product) => {
+              const imageUrl = product.image_urls?.[0] || product.image_url;
+              return (
+                <TableRow key={product.id}>
+                  <TableCell>
+                    <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-gray-100">
+                      <Image
+                        src={imageUrl || "/placeholder.jpg"}
+                        alt={product.name}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                  </TableCell>
+                  <TableCell className="font-medium">{product.name}</TableCell>
+                  <TableCell>₹{product.price}</TableCell>
+                  <TableCell>{product.stock}</TableCell>
+                  <TableCell>
+                    <span
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        product.is_active
+                          ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
+                          : "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400"
+                      }`}
+                    >
+                      {product.is_active ? "Active" : "Inactive"}
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <ProductActions product={product} />
+                  </TableCell>
+                </TableRow>
+              );
+            })}
             {(!products || products.length === 0) && (
               <TableRow>
                 <TableCell
                   colSpan={6}
                   className="text-center py-8 text-muted-foreground"
                 >
-                  No products found.
+                  No products found. Click "Add Product" to create one.
                 </TableCell>
               </TableRow>
             )}

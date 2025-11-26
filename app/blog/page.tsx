@@ -19,14 +19,11 @@ export default async function BlogPage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
-      <Header />
+     
       
-      <main className="flex-grow container mx-auto px-4 py-12">
+      <div className="flex-grow container mx-auto px-4 py-12">
         <div className="max-w-6xl mx-auto">
-          <h1 className="text-4xl font-bold mb-2">Latest Updates</h1>
-          <p className="text-muted-foreground mb-10 text-lg">
-            Insights, tutorials, and news from the team.
-          </p>
+          
           
           {posts && posts.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -76,9 +73,9 @@ export default async function BlogPage() {
             </div>
           )}
         </div>
-      </main>
+      </div>
 
-      <Footer />
+     
     </div>
   );
 }

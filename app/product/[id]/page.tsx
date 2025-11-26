@@ -4,7 +4,6 @@ import ProductTabs from "@/components/product/ProductTabs";
 import ProductCarousel from "@/components/product/ProductCarousel";
 import { createAdminClient } from "@/utils/supabase/admin";
 import { notFound } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
 const supabase = createAdminClient();
@@ -35,6 +34,17 @@ const ProductPage = async ({ params }: { params: Promise<{ id: string }> }) => {
   const product = await getProduct(id);
   const related = await getRelatedProducts(id);
 
+  // Fetch category if product has one
+  let category = null;
+  if (product.category_id) {
+    const { data } = await supabase
+      .from("categories")
+      .select("name, slug")
+      .eq("id", product.category_id)
+      .single();
+    category = data;
+  }
+
   // Get images array - use image_urls if available, fallback to single image_url
   const productImages =
     product.image_urls && product.image_urls.length > 0
@@ -48,12 +58,34 @@ const ProductPage = async ({ params }: { params: Promise<{ id: string }> }) => {
       {/* Breadcrumb / Back */}
       <div className="bg-white border-b border-gray-100 py-4 sticky top-0 z-10 backdrop-blur-sm bg-white/95">
         <div className="container mx-auto px-6 max-w-7xl">
-          <Link
-            href="/products"
-            className="inline-flex items-center text-sm text-gray-600 hover:text-purple-600 transition-colors font-medium"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" /> Back to Products
-          </Link>
+          <div className="flex items-center gap-2 text-sm text-gray-600">
+            <Link href="/" className="hover:text-purple-600 transition-colors">
+              Home
+            </Link>
+            <span>/</span>
+            {category ? (
+              <>
+                <Link
+                  href={`/category/${category.slug}`}
+                  className="hover:text-purple-600 transition-colors"
+                >
+                  {category.name}
+                </Link>
+                <span>/</span>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/products"
+                  className="hover:text-purple-600 transition-colors"
+                >
+                  Products
+                </Link>
+                <span>/</span>
+              </>
+            )}
+            <span className="text-gray-900 font-medium">{product.name}</span>
+          </div>
         </div>
       </div>
 

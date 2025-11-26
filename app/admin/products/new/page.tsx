@@ -23,15 +23,20 @@ export default async function NewProductPage() {
     return redirect("/dashboard");
   }
 
+  // Fetch categories for category selector
+  const { data: categories } = await supabase
+    .from("categories")
+    .select("*")
+    .eq("is_active", true)
+    .order("name", { ascending: true });
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-16">
+      ​
       <div>
-        <h2 className="text-3xl font-bold tracking-tight">Create Product</h2>
-        <p className="text-muted-foreground">
-          Add a new product to your inventory.
-        </p>
+        <h2 className="text-3xl font-bold tracking-tight">Add Product</h2>
       </div>
-      <ProductForm />
+      <ProductForm categories={categories || []} />
     </div>
   );
 }

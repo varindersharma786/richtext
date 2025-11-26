@@ -13,6 +13,10 @@ import {
   Home,
   Heart,
   User,
+  ListFilterPlus,
+  Globe,
+  Megaphone,
+  Image,
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -27,7 +31,12 @@ export function DashboardSidebar({ role }: SidebarProps) {
     { href: "/admin", label: "Overview", icon: LayoutDashboard },
     { href: "/admin/users", label: "Users", icon: Users },
     { href: "/admin/products", label: "Products", icon: ShoppingBag },
+    { href: "/admin/categories", label: "Categories", icon: ListFilterPlus },
     { href: "/admin/orders", label: "Orders", icon: Package },
+    { href: "/admin/announcements", label: "Announcements", icon: Megaphone },
+    { href: "/admin/banners", label: "Banners", icon: Image },
+    { href: "/admin/seo", label: "SEO", icon: Globe },
+    { href: "/admin/blogs", label: "Blogs", icon: Image },
     { href: "/admin/settings", label: "Settings", icon: Settings },
   ];
 

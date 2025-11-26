@@ -3,6 +3,7 @@
 import { createClient } from "@/utils/supabase/client";
 import { motion } from "framer-motion";
 import ProductCardAsphalte from "./ProductCardAsphalte";
+import Link from "next/link";
 
 const supabase = createClient();
 
@@ -47,9 +48,9 @@ export default async function ProductGrid() {
         </div>
 
         <div className="text-center mt-16">
-          <a href="/products" className="text-taupe-600 font-medium hover:underline">
+          <Link href="/products" className="text-taupe-600 font-medium hover:underline">
             View All →
-          </a>
+          </Link>
         </div>
       </div>
     </section>

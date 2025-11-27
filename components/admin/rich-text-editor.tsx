@@ -5,6 +5,7 @@ import StarterKit from "@tiptap/starter-kit";
 import Image from "@tiptap/extension-image";
 import Link from "@tiptap/extension-link";
 import TextAlign from "@tiptap/extension-text-align";
+import type { Level } from '@tiptap/extension-heading';
 import {
   Bold,
   Italic,
@@ -24,7 +25,6 @@ import {
   Link as LinkIcon,
   Code,
 } from "lucide-react";
-import { Toggle } from "@/components/ui/toggle";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -127,12 +127,12 @@ export default function RichTextEditor({
   };
 
   const headings = [
-    { level: 1, label: "Heading 1", icon: <Heading1 className="h-4 w-4" /> },
-    { level: 2, label: "Heading 2", icon: <Heading2 className="h-4 w-4" /> },
-    { level: 3, label: "Heading 3", icon: <Heading3 className="h-4 w-4" /> },
-    { level: 4, label: "Heading 4", icon: <Heading4 className="h-4 w-4" /> },
-    { level: 5, label: "Heading 5", icon: <Heading5 className="h-4 w-4" /> },
-    { level: 6, label: "Heading 6", icon: <Heading6 className="h-4 w-4" /> },
+    { level: 1 as Level, label: "Heading 1", icon: <Heading1 className="h-4 w-4" /> },
+    { level: 2 as Level, label: "Heading 2", icon: <Heading2 className="h-4 w-4" /> },
+    { level: 3 as Level, label: "Heading 3", icon: <Heading3 className="h-4 w-4" /> },
+    { level: 4 as Level, label: "Heading 4", icon: <Heading4 className="h-4 w-4" /> },
+    { level: 5 as Level, label: "Heading 5", icon: <Heading5 className="h-4 w-4" /> },
+    { level: 6 as Level, label: "Heading 6", icon: <Heading6 className="h-4 w-4" /> },
   ];
 
   return (
@@ -181,7 +181,7 @@ export default function RichTextEditor({
                   editor
                     .chain()
                     .focus()
-                    .toggleHeading({ level: heading.level })
+                    .toggleHeading({ level: heading.level  })
                     .run()
                 }
               >

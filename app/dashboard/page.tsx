@@ -21,6 +21,29 @@ export default async function DashboardPage() {
     .eq("id", user.id)
     .single();
 
+  // Fetch real orders data
+  const { data: orders, count: ordersCount } = await supabase
+    .from("orders")
+    .select("*", { count: "exact" })
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false });
+
+  // Count pending orders
+  const pendingOrders =
+    orders?.filter(
+      (order) => order.status === "pending" || order.status === "processing"
+    ).length || 0;
+
+  // Fetch wishlist count (assuming there's a wishlist table or saved items)
+  // If no wishlist table exists, we'll show 0
+  const { count: wishlistCount } = await supabase
+    .from("products")
+    .select("*", { count: "exact", head: true })
+    .eq("user_id", user.id);
+
+  // Get recent orders (last 2)
+  const recentOrders = orders?.slice(0, 2) || [];
+
   return (
     <div className="space-y-8">
       <div>
@@ -43,10 +66,12 @@ export default async function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-taupe-900 dark:text-white">
-                12
+                {ordersCount || 0}
               </div>
               <p className="text-xs text-muted-foreground">
-                2 pending delivery
+                {pendingOrders > 0
+                  ? `${pendingOrders} pending delivery`
+                  : "All delivered"}
               </p>
             </CardContent>
           </Card>
@@ -62,7 +87,7 @@ export default async function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-taupe-900 dark:text-white">
-                5
+                {wishlistCount || 0}
               </div>
               <p className="text-xs text-muted-foreground">Items saved</p>
             </CardContent>
@@ -110,32 +135,59 @@ export default async function DashboardPage() {
             <CardTitle>Recent Orders</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {[1, 2].map((i) => (
-                <div
-                  key={i}
-                  className="flex items-center justify-between p-4 border rounded-lg bg-gray-50 dark:bg-neutral-800/50 border-gray-100 dark:border-neutral-800"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="h-12 w-12 bg-gray-200 rounded-md flex items-center justify-center">
-                      <Package className="h-6 w-6 text-gray-500" />
+            {recentOrders.length > 0 ? (
+              <div className="space-y-4">
+                {recentOrders.map((order) => (
+                  <div
+                    key={order.id}
+                    className="flex items-center justify-between p-4 border rounded-lg bg-gray-50 dark:bg-neutral-800/50 border-gray-100 dark:border-neutral-800"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="h-12 w-12 bg-gray-200 rounded-md flex items-center justify-center">
+                        <Package className="h-6 w-6 text-gray-500" />
+                      </div>
+                      <div>
+                        <p className="font-medium">
+                          Order #{order.id.slice(0, 8)}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          Placed on{" "}
+                          {new Date(order.created_at).toLocaleDateString()}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-medium">Order #ORD-2023-{100 + i}</p>
-                      <p className="text-sm text-muted-foreground">
-                        Placed on Oct {20 + i}, 2023
+                    <div className="text-right">
+                      <p className="font-medium">
+                        ₹{Number(order.total_amount).toLocaleString("en-IN")}
                       </p>
+                      <span
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          order.status === "delivered"
+                            ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
+                            : order.status === "cancelled"
+                              ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
+                              : "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400"
+                        }`}
+                      >
+                        {order.status.charAt(0).toUpperCase() +
+                          order.status.slice(1)}
+                      </span>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="font-medium">₹2,499.00</p>
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
-                      Delivered
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12 text-muted-foreground">
+                <Package className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p>No orders yet</p>
+                <Link
+                  href="/products"
+                  className="text-sm text-primary hover:underline mt-2 inline-block"
+                >
+                  Start shopping
+                </Link>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

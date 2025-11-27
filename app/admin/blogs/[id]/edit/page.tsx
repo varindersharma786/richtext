@@ -31,7 +31,6 @@ export default function EditPostPage() {
 
   useEffect(() => {
     const fetchPost = async () => {
-      console.log("EditPostPage: fetching post", params.id);
       try {
         const { data, error } = await supabase
           .from("posts")
@@ -73,6 +72,7 @@ export default function EditPostPage() {
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
+    
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 

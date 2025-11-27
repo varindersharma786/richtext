@@ -63,17 +63,24 @@ export default function EditPostPage() {
     }
   }, [params.id, router, supabase]);
 
-  // Real-time slug generation (optional for edit, maybe user wants to keep old slug)
-  // Let's only update slug if user manually changes title AND slug was matching old title?
-  // Or just let user manually edit slug if they want.
-  // For now, let's NOT auto-update slug on edit to preserve URLs, unless user clears it.
-
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-    
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // Sanitize slug when user finishes editing (on blur)
+  const handleSlugBlur = () => {
+    const sanitizedSlug = formData.slug
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, "-") // Replace spaces with hyphens
+      .replace(/[^a-z0-9-]+/g, "-") // Replace special chars with hyphens
+      .replace(/-+/g, "-") // Replace multiple hyphens with single hyphen
+      .replace(/(^-|-$)+/g, ""); // Remove leading/trailing hyphens
+
+    setFormData((prev) => ({ ...prev, slug: sanitizedSlug }));
   };
 
   const handleEditorChange = (content: string) => {
@@ -154,6 +161,7 @@ export default function EditPostPage() {
                   name="slug"
                   value={formData.slug}
                   onChange={handleChange}
+                  onBlur={handleSlugBlur}
                   className="font-mono text-sm"
                   required
                 />

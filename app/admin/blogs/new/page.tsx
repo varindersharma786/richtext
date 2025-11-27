@@ -27,21 +27,39 @@ export default function NewPostPage() {
     published: false,
   });
 
-  // Real-time slug generation
+  // Auto-generate slug from title only when slug is empty
   useEffect(() => {
-    const slug = formData.title
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/(^-|-$)+/g, "");
+    if (!formData.slug && formData.title) {
+      const slug = formData.title
+        .toLowerCase()
+        .trim()
+        .replace(/\s+/g, "-") // Replace spaces with hyphens
+        .replace(/[^a-z0-9-]+/g, "-") // Replace special chars with hyphens
+        .replace(/-+/g, "-") // Replace multiple hyphens with single hyphen
+        .replace(/(^-|-$)+/g, ""); // Remove leading/trailing hyphens
 
-    setFormData((prev) => ({ ...prev, slug }));
-  }, [formData.title]);
+      setFormData((prev) => ({ ...prev, slug }));
+    }
+  }, [formData.title, formData.slug]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // Sanitize slug when user finishes editing (on blur)
+  const handleSlugBlur = () => {
+    const sanitizedSlug = formData.slug
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, "-") // Replace spaces with hyphens
+      .replace(/[^a-z0-9-]+/g, "-") // Replace special chars with hyphens
+      .replace(/-+/g, "-") // Replace multiple hyphens with single hyphen
+      .replace(/(^-|-$)+/g, ""); // Remove leading/trailing hyphens
+
+    setFormData((prev) => ({ ...prev, slug: sanitizedSlug }));
   };
 
   const handleEditorChange = (content: string) => {
@@ -120,6 +138,7 @@ export default function NewPostPage() {
                   name="slug"
                   value={formData.slug}
                   onChange={handleChange}
+                  onBlur={handleSlugBlur}
                   className="font-mono text-sm"
                   required
                 />

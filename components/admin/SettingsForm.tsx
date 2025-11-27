@@ -112,6 +112,7 @@ export default function SettingsForm({ initialSettings }: SettingsFormProps) {
                 value={settings.logo_url || ""}
                 onChange={(url) => setSettings({ ...settings, logo_url: url })}
                 onRemove={() => setSettings({ ...settings, logo_url: null })}
+                bucket="store-logo"
               />
             </div>
             <div className="flex items-center justify-between rounded-lg border p-4">

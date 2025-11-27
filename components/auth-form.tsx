@@ -99,7 +99,11 @@ export default function AuthForm() {
         <CardAction>
           <Tooltip>
             <TooltipTrigger>
-              <Button variant="link" className="cursor-pointer"  onClick={() => router.push("/register")}>
+              <Button
+                variant="link"
+                className="cursor-pointer"
+                onClick={() => router.push("/register")}
+              >
                 Sign Up
               </Button>
             </TooltipTrigger>
@@ -111,8 +115,7 @@ export default function AuthForm() {
       </CardHeader>
       <CardContent>
         <h2 className="text-2xl font-bold text-center mb-4">Login</h2>
-        <form id="login-form"  className="flex flex-col gap-3">
-         
+        <form id="login-form" className="flex flex-col gap-3">
           <Label htmlFor="email">Email</Label>
           <Input
             type="email"
@@ -132,6 +135,16 @@ export default function AuthForm() {
             className="p-2 border rounded dark:bg-gray-700 dark:border-gray-600"
             required
           />
+          <div className="text-right">
+            <Button
+              variant="link"
+              className="text-sm text-muted-foreground hover:text-foreground p-0 h-auto"
+              onClick={() => router.push("/forgot-password")}
+              type="button"
+            >
+              Forgot password?
+            </Button>
+          </div>
         </form>
       </CardContent>
       <CardFooter className="flex-col gap-2">

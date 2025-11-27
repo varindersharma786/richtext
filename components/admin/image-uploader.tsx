@@ -1,117 +1,175 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import { createClient } from "@/utils/supabase/client";
-import { Upload, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Upload, X, Image as ImageIcon } from "lucide-react";
+import { toast } from "sonner";
 import Image from "next/image";
 
 interface ImageUploaderProps {
   value: string;
   onChange: (url: string) => void;
+  onRemove?: () => void;
+  bucket?: string; // Allow specifying custom bucket
 }
 
-export default function ImageUploader({ value, onChange }: ImageUploaderProps) {
+export default function ImageUploader({
+  value,
+  onChange,
+  onRemove,
+  bucket = "blog-images", // Default bucket
+}: ImageUploaderProps) {
   const [uploading, setUploading] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const supabase = createClient();
 
-  const uploadImage = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const uploadFile = async (file: File) => {
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please upload an image file");
+      return;
+    }
+
+    setUploading(true);
+    const fileExt = file.name.split(".").pop();
+    const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
+    const filePath = `${fileName}`;
+
     try {
-      setUploading(true);
-
-      if (!event.target.files || event.target.files.length === 0) {
-        throw new Error("You must select an image to upload.");
-      }
-
-      // Check user plan before uploading
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) {
-        throw new Error("Please sign in to upload images.");
-      }
-
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("plan")
-        .eq("id", user.id)
-        .single();
-
-      const userPlan = profile?.plan || "free";
-
-      // Only Pro users can upload images
-      if (userPlan !== "pro") {
-        throw new Error(
-          "Image upload is only available for Pro users. Please upgrade your plan to upload custom images."
-        );
-      }
-
-      const file = event.target.files[0];
-      const fileExt = file.name.split(".").pop();
-      const fileName = `${Math.random()}.${fileExt}`;
-      const filePath = `${fileName}`;
-
       const { error: uploadError } = await supabase.storage
-        .from("blog-images")
+        .from(bucket)
         .upload(filePath, file);
 
-      if (uploadError) {
-        throw uploadError;
-      }
+      if (uploadError) throw uploadError;
 
-      const { data } = supabase.storage
-        .from("blog-images")
-        .getPublicUrl(filePath);
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from(bucket).getPublicUrl(filePath);
 
-      onChange(data.publicUrl);
-    } catch (error: any) {
-      alert("Error uploading image: " + error.message);
+      onChange(publicUrl);
+      toast.success("Image uploaded successfully");
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      toast.error("Failed to upload image");
     } finally {
       setUploading(false);
     }
   };
 
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      uploadFile(file);
+    }
+  };
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      uploadFile(file);
+    }
+  }, []);
+
+  const handleRemove = async () => {
+    if (value && onRemove) {
+      // Extract file path from URL
+      const urlParts = value.split("/");
+      const fileName = urlParts[urlParts.length - 1];
+
+      try {
+        await supabase.storage.from(bucket).remove([fileName]);
+        onRemove();
+        toast.success("Image removed");
+      } catch (error) {
+        console.error("Error removing image:", error);
+        toast.error("Failed to remove image");
+      }
+    }
+  };
+
   return (
-    <div className="flex flex-col gap-4">
+    <div className="space-y-4">
       {value ? (
-        <div className="relative w-full h-64 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
-          <Image
-            src={value}
-            alt="Featured Image"
-            fill
-            className="object-cover"
-          />
-          <button
-            onClick={() => onChange("")}
-            className="absolute top-2 right-2 p-1 bg-red-600 text-white rounded-full hover:bg-red-700"
-            type="button"
-          >
-            <X size={16} />
-          </button>
+        <div className="relative group">
+          <div className="relative aspect-video w-full overflow-hidden rounded-lg border border-border">
+            <Image
+              src={value}
+              alt="Uploaded image"
+              fill
+              className="object-contain w-full"
+              objectFit="contain"
+
+
+            />
+          </div>
+          <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+            <Button
+              type="button"
+              variant="destructive"
+              size="icon"
+              onClick={handleRemove}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       ) : (
-        <div className="flex items-center justify-center w-full">
-          <label className="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-gray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500">
-            <div className="flex flex-col items-center justify-center pt-5 pb-6">
-              <Upload className="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400" />
-              <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
-                <span className="font-semibold">Click to upload</span> or drag
-                and drop
+        <div
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+          className={`border-2 border-dashed rounded-lg p-12 text-center cursor-pointer transition-colors ${
+            isDragging
+              ? "border-primary bg-primary/5"
+              : "border-border hover:border-primary/50 hover:bg-gray-50 dark:hover:bg-neutral-900"
+          }`}
+          onClick={() => fileInputRef.current?.click()}
+        >
+          <div className="flex flex-col items-center gap-4">
+            {isDragging ? (
+              <ImageIcon className="h-12 w-12 text-primary" />
+            ) : (
+              <Upload className="h-12 w-12 text-muted-foreground" />
+            )}
+            <div>
+              <p className="text-sm font-medium">
+                {isDragging ? "Drop image here" : "Click to upload or drag and drop"}
               </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                SVG, PNG, JPG or GIF (MAX. 800x400px)
+              <p className="text-xs text-muted-foreground mt-1">
+                PNG, JPG, GIF up to 10MB
               </p>
             </div>
-            <input
-              type="file"
-              className="hidden"
-              accept="image/*"
-              onChange={uploadImage}
-              disabled={uploading}
-            />
-          </label>
+          </div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleFileSelect}
+            className="hidden"
+            disabled={uploading}
+          />
         </div>
       )}
-      {uploading && <p className="text-sm text-blue-600">Uploading...</p>}
+
+      {uploading && (
+        <div className="text-sm text-muted-foreground text-center">
+          Uploading...
+        </div>
+      )}
     </div>
   );
 }

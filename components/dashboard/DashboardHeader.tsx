@@ -1,7 +1,10 @@
 "use client";
 
-import { Bell, Search, Menu } from "lucide-react";
+import { Bell, Search, Menu, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { createClient } from "@/utils/supabase/client";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,8 +14,37 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useState, useEffect } from "react";
 
 export function DashboardHeader() {
+  const router = useRouter();
+  const supabase = createClient();
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    const getUser = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      setUser(user);
+    };
+    getUser();
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+
+      toast.success("Logged out successfully");
+      router.push("/login");
+      router.refresh();
+    } catch (error: any) {
+      console.error("Error signing out:", error);
+      toast.error("Failed to sign out");
+    }
+  };
+
   return (
     <header className="h-16 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-md border-b border-gray-100 dark:border-neutral-800 sticky top-0 z-50 px-6 flex items-center justify-between">
       <div className="flex items-center gap-4">
@@ -39,26 +71,42 @@ export function DashboardHeader() {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="relative h-8 w-8 rounded-full">
               <Avatar className="h-8 w-8">
-                <AvatarImage src="/avatars/01.png" alt="@shadcn" />
-                <AvatarFallback>SC</AvatarFallback>
+                <AvatarImage src={user?.user_metadata?.avatar_url} alt="User" />
+                <AvatarFallback>
+                  {user?.email?.charAt(0).toUpperCase() || "U"}
+                </AvatarFallback>
               </Avatar>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-56" align="end" forceMount>
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium leading-none">shadcn</p>
+                <p className="text-sm font-medium leading-none">
+                  {user?.user_metadata?.full_name || "User"}
+                </p>
                 <p className="text-xs leading-none text-muted-foreground">
-                  m@example.com
+                  {user?.email || "user@example.com"}
                 </p>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Profile</DropdownMenuItem>
-            <DropdownMenuItem>Billing</DropdownMenuItem>
-            <DropdownMenuItem>Settings</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => router.push("/dashboard/profile")}>
+              Profile
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => router.push("/dashboard/orders")}>
+              Orders
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => router.push("/dashboard/wishlist")}
+            >
+              Wishlist
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-red-500">
+            <DropdownMenuItem
+              className="text-red-600 dark:text-red-400 cursor-pointer"
+              onClick={handleLogout}
+            >
+              <LogOut className="w-4 h-4 mr-2" />
               Log out
             </DropdownMenuItem>
           </DropdownMenuContent>

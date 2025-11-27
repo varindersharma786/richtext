@@ -158,15 +158,23 @@ export default function CartDrawer() {
             </p>
 
             {/* Action Buttons */}
-            <div className="space-y-3">
-              <Link href="/checkout" onClick={() => setIsOpen(false)}>
+            <div className="space-y-3 flex flex-col gap-2">
+              <Link
+                href="/checkout"
+                className="mb-0 cursor-pointer"
+                onClick={() => setIsOpen(false)}
+              >
                 <Button className="w-full bg-gray-900 hover:bg-gray-800 h-12 text-base">
                   Proceed to Checkout
                   <ArrowRight className="ml-2 w-5 h-5" />
                 </Button>
               </Link>
 
-              <Link href="/cart" onClick={() => setIsOpen(false)}>
+              <Link
+                href="/cart"
+                className="mb-0 cursor-pointer"
+                onClick={() => setIsOpen(false)}
+              >
                 <Button
                   variant="outline"
                   className="w-full h-12 text-base border-2"

@@ -366,7 +366,7 @@ export default function CheckoutPage() {
                     const imageUrl = item.image_urls?.[0] || item.image_url;
                     return (
                       <div key={item.id} className="flex gap-3">
-                        <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+                        <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-gray-100 shrink-0">
                           {imageUrl ? (
                             <Image
                               src={imageUrl}

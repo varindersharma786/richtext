@@ -108,7 +108,9 @@ export const useCart = create<CartStore>()(
                 set((state) => ({
                     items: state.items.filter((i) => i.id !== productId),
                 }));
-                toast.success("Removed from cart");
+                toast.success("Removed from cart",{
+                    description: "Item removed from cart",
+                });
             },
 
             clearCart: () => set({ items: [] }),

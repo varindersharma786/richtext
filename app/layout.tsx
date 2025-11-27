@@ -22,8 +22,7 @@ export const metadata: Metadata = {
 };
 
 import { createClient } from "@/utils/supabase/server";
-
-import MaintenancePage from "@/components/store/MaintenancePage";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 export default async function RootLayout({
   children,
@@ -39,49 +38,53 @@ export default async function RootLayout({
     .single();
 
   // Check maintenance mode
-  if (storeSettings?.maintenance_mode) {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+  // if (storeSettings?.maintenance_mode) {
+  //   const {
+  //     data: { user },
+  //   } = await supabase.auth.getUser();
 
-    if (user) {
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("role")
-        .eq("id", user.id)
-        .single();
+  //   if (user) {
+  //     const { data: profile } = await supabase
+  //       .from("profiles")
+  //       .select("role")
+  //       .eq("id", user.id)
+  //       .single();
 
-      if (profile?.role !== "admin") {
-        return (
-          <html lang="en">
-            <body
-              className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-            >
-              <MaintenancePage />
-            </body>
-          </html>
-        );
-      }
-    } else {
-      return (
-        <html lang="en">
-          <body
-            className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-          >
-            <MaintenancePage />
-          </body>
-        </html>
-      );
-    }
-  }
+  //     if (profile?.role !== "admin") {
+  //       return (
+  //         <html lang="en">
+  //           <body
+  //             className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+  //           >
+  //             <MaintenancePage />
+  //           </body>
+  //         </html>
+  //       );
+  //     }
+  //   } else {
+  //     return (
+  //       <html lang="en">
+  //         <body
+  //           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+  //         >
+  //           <MaintenancePage />
+  //         </body>
+  //       </html>
+  //     );
+  //   }
+  // }
 
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <LayoutWrapper storeSettings={storeSettings}>{children}</LayoutWrapper>
-        <Toaster />
+        <TooltipProvider>
+          <LayoutWrapper storeSettings={storeSettings}>
+            {children}
+          </LayoutWrapper>
+          <Toaster />
+        </TooltipProvider>
         <Analytics />
         <SpeedInsights />
       </body>

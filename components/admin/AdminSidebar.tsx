@@ -11,6 +11,7 @@ import {
   Settings,
   LogOut,
   Store,
+  Globe,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -47,6 +48,11 @@ const navItems = [
     title: "Customers",
     href: "/admin/users",
     icon: Users,
+  },
+  {
+    title: "Dropshipping",
+    href: "/admin/dropshipping",
+    icon: Globe,
   },
   {
     title: "Store Settings",

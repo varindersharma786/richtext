@@ -190,6 +190,7 @@ export async function importCJProduct(product: CJProduct) {
         // ──────────────────────────────
         // 5. Insert into Supabase
         // ──────────────────────────────
+    
         const { data, error } = await supabase
             .from("products")
             .insert(productData)
@@ -198,7 +199,7 @@ export async function importCJProduct(product: CJProduct) {
 
         if (error) {
             if (error.code === "23505") {
-                throw new Error(`Product already imported: ${bestName}`);
+                throw new Error(`Product already imported: ${details.productNameEn}`);
             }
             throw error;
         }

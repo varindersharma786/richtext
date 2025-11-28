@@ -84,6 +84,7 @@ export default async function AdminProductsPage() {
           </TableHeader>
           <TableBody>
             {products?.map((product) => {
+            console.log(product);
               const imageUrl = product.image_urls?.[0] || product.image_url;
               return (
                 <TableRow key={product.id}>

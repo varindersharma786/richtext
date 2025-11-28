@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Loader2 } from "lucide-react";
+import { Search, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import { CJProduct } from "@/lib/cj-dropshipping";
 import { searchCJProducts } from "./actions";
 import CJProductCard from "@/components/admin/dropshipping/CJProductCard";
@@ -16,21 +16,32 @@ export default function DropshippingPage() {
   const [searched, setSearched] = useState(false);
   const [error, setError] = useState("");
 
-  const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // Pagination state
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const pageSize = 20; // Default CJ page size
+
+  const handleSearch = async (e?: React.FormEvent, pageOverride?: number) => {
+    if (e) e.preventDefault();
     if (!keyword.trim()) return;
+
+    const targetPage = pageOverride || 1;
 
     setLoading(true);
     setError("");
     setSearched(true);
-    setProducts([]);
+    if (targetPage === 1) setProducts([]); // Clear only on new search
 
     try {
-      const result = await searchCJProducts(keyword);
+      const result = await searchCJProducts(keyword, targetPage);
       if (result.success && result.data) {
         setProducts(result.data.list || []);
+        setTotal(result.data.total || 0);
+        setPage(targetPage);
       } else {
         setError(result.error || "Failed to fetch products");
+        setProducts([]);
+        setTotal(0);
       }
     } catch (err) {
       setError("An unexpected error occurred");
@@ -38,6 +49,14 @@ export default function DropshippingPage() {
       setLoading(false);
     }
   };
+
+  const handlePageChange = (newPage: number) => {
+    if (newPage < 1) return;
+    handleSearch(undefined, newPage);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const totalPages = Math.ceil(total / pageSize);
 
   return (
     <div className="space-y-8">
@@ -51,7 +70,10 @@ export default function DropshippingPage() {
       </div>
 
       <div className="flex max-w-2xl gap-4">
-        <form onSubmit={handleSearch} className="flex w-full gap-2">
+        <form
+          onSubmit={(e) => handleSearch(e, 1)}
+          className="flex w-full gap-2"
+        >
           <Input
             placeholder="Search for products (e.g., 'watch', 'yoga mat')..."
             value={keyword}
@@ -83,10 +105,37 @@ export default function DropshippingPage() {
       ) : (
         <>
           {products.length > 0 ? (
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {products.map((product) => (
-                <CJProductCard key={product.pid} product={product} />
-              ))}
+            <div className="space-y-8">
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {products.map((product) => (
+                  <CJProductCard key={product.pid} product={product} />
+                ))}
+              </div>
+
+              {/* Pagination Controls */}
+              <div className="flex items-center justify-center gap-4 py-4">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(page - 1)}
+                  disabled={page <= 1 || loading}
+                >
+                  <ChevronLeft className="h-4 w-4 mr-2" />
+                  Previous
+                </Button>
+                <div className="text-sm text-muted-foreground">
+                  Page {page} of {totalPages || 1}
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(page + 1)}
+                  disabled={page >= totalPages || loading}
+                >
+                  Next
+                  <ChevronRight className="h-4 w-4 ml-2" />
+                </Button>
+              </div>
             </div>
           ) : (
             searched && (

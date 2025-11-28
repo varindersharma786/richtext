@@ -33,6 +33,7 @@ export function DashboardSidebar({ role }: SidebarProps) {
     { href: "/admin/products", label: "Products", icon: ShoppingBag },
     { href: "/admin/categories", label: "Categories", icon: ListFilterPlus },
     { href: "/admin/orders", label: "Orders", icon: Package },
+    { href: "/admin/dropshipping", label: "Dropshipping", icon: Globe },
     { href: "/admin/announcements", label: "Announcements", icon: Megaphone },
     { href: "/admin/banners", label: "Banners", icon: Image },
     { href: "/admin/seo", label: "SEO", icon: Globe },

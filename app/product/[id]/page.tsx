@@ -53,6 +53,14 @@ const ProductPage = async ({ params }: { params: Promise<{ id: string }> }) => {
         ? [product.image_url]
         : [];
 
+  // Fetch product variants
+  const { data: variants } = await supabase
+    .from("product_variants")
+    .select("*")
+    .eq("product_id", id)
+    .eq("is_active", true)
+    .order("sort_order", { ascending: true });
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white pb-20">
       {/* Breadcrumb / Back */}
@@ -98,7 +106,7 @@ const ProductPage = async ({ params }: { params: Promise<{ id: string }> }) => {
 
           {/* Info */}
           <div>
-            <ProductInfo product={product} />
+            <ProductInfo product={product} variants={variants || []} />
           </div>
         </div>
 

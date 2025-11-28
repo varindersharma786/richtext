@@ -16,9 +16,10 @@ import { importCJProduct } from "@/app/admin/dropshipping/actions";
 
 interface CJProductCardProps {
   product: CJProduct;
+  onView: (product: CJProduct) => void;
 }
 
-export default function CJProductCard({ product }: CJProductCardProps) {
+export default function CJProductCard({ product, onView }: CJProductCardProps) {
   const [importing, setImporting] = useState(false);
 
   const handleImport = async () => {
@@ -54,7 +55,7 @@ export default function CJProductCard({ product }: CJProductCardProps) {
           {product.productNameEn}
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-4 pt-0 flex-grow">
+      <CardContent className="p-4 pt-0 grow">
         <div className="flex justify-between items-center mt-2">
           <span className="text-lg font-bold text-primary">
             ${product.sellPrice}
@@ -64,7 +65,14 @@ export default function CJProductCard({ product }: CJProductCardProps) {
           </span>
         </div>
       </CardContent>
-      <CardFooter className="p-4 pt-0">
+      <CardFooter className="p-4 pt-0 flex flex-col gap-2">
+        <Button
+          className="w-full"
+          variant="outline"
+          onClick={() => onView(product)}
+        >
+          View Product
+        </Button>
         <Button
           className="w-full"
           onClick={handleImport}

@@ -83,7 +83,7 @@ export default async function RootLayout({
           <LayoutWrapper storeSettings={storeSettings}>
             {children}
           </LayoutWrapper>
-          <Toaster />
+          <Toaster richColors position="top-center" />
         </TooltipProvider>
         <Analytics />
         <SpeedInsights />

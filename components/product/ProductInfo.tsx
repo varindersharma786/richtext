@@ -6,16 +6,56 @@ import { Button } from "@/components/ui/button";
 import { useCart } from "@/hooks/use-cart";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
+import VariantSelector from "@/components/product/VariantSelector";
+import { ProductVariant } from "@/types/product-variant";
 
-export default function ProductInfo({ product }: { product: any }) {
+export default function ProductInfo({
+  product,
+  variants = [],
+}: {
+  product: any;
+  variants?: ProductVariant[];
+}) {
   const { addToCart } = useCart();
   const [quantity, setQuantity] = useState(1);
+  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(
+    null
+  );
+
+  const displayPrice = selectedVariant
+    ? product.price + selectedVariant.price_adjustment
+    : product.price;
+
+  const displayStock = selectedVariant ? selectedVariant.stock : product.stock;
+
+  const isOutOfStock = displayStock <= 0;
 
   const handleAddToCart = () => {
-    for (let i = 0; i < quantity; i++) {
-      addToCart(product);
+    if (variants.length > 0 && !selectedVariant) {
+      toast.error("Please select a variant");
+      return;
     }
-    toast.success(`Added ${quantity} × ${product.name} to cart!`);
+
+    if (isOutOfStock) {
+      toast.error("This product is out of stock");
+      return;
+    }
+
+    const cartItem = {
+      ...product,
+      variant_id: selectedVariant?.id || null,
+      variant_name: selectedVariant?.variant_name || null,
+      price: displayPrice,
+    };
+
+    for (let i = 0; i < quantity; i++) {
+      addToCart(cartItem);
+    }
+
+    const variantText = selectedVariant
+      ? ` (${selectedVariant.variant_name})`
+      : "";
+    toast.success(`Added ${quantity} × ${product.name}${variantText} to cart!`);
   };
 
   return (
@@ -31,7 +71,10 @@ export default function ProductInfo({ product }: { product: any }) {
         <div className="flex items-center gap-4">
           <div className="flex gap-1">
             {[...Array(5)].map((_, i) => (
-              <Star key={i} className="w-6 h-6 fill-yellow-400 text-yellow-400" />
+              <Star
+                key={i}
+                className="w-6 h-6 fill-yellow-400 text-yellow-400"
+              />
             ))}
           </div>
           <span className="text-gray-600">(428 reviews)</span>
@@ -40,18 +83,34 @@ export default function ProductInfo({ product }: { product: any }) {
 
       <div className="space-y-4">
         <div className="text-5xl font-bold text-purple-600">
-          ₹{Number(product.price).toLocaleString("en-IN")}
+          ₹{Number(displayPrice).toLocaleString("en-IN")}
         </div>
         <p className="text-gray-600">Inclusive of all taxes</p>
+        {displayStock < 10 && displayStock > 0 && (
+          <p className="text-orange-600 font-medium">
+            Only {displayStock} left in stock!
+          </p>
+        )}
+        {isOutOfStock && <p className="text-red-600 font-bold">Out of Stock</p>}
       </div>
+
+      {/* Variant Selector */}
+      {variants.length > 0 && (
+        <VariantSelector
+          variants={variants}
+          basePrice={product.price}
+          onVariantChange={setSelectedVariant}
+        />
+      )}
 
       <div className="flex gap-4">
         <Button
           onClick={handleAddToCart}
           size="lg"
-          className="flex-1 h-16 text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-2xl"
+          disabled={isOutOfStock || (variants.length > 0 && !selectedVariant)}
+          className="flex-1 h-16 text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-2xl disabled:opacity-50"
         >
-          Add to Cart
+          {isOutOfStock ? "Out of Stock" : "Add to Cart"}
         </Button>
         <Button size="lg" variant="outline" className="h-16 w-16">
           <Heart className="w-7 h-7" />

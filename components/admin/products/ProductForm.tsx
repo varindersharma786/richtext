@@ -6,6 +6,8 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Upload, X, GripVertical } from "lucide-react";
+import VariantManager from "@/components/admin/products/VariantManager";
+import { ProductVariant } from "@/types/product-variant";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -139,9 +141,11 @@ function SortableImage({
 export default function ProductForm({
   product,
   categories = [],
+  existingVariants = [],
 }: {
   product?: Product;
   categories?: any[];
+  existingVariants?: ProductVariant[];
 }) {
   const router = useRouter();
   const supabase = createClient();
@@ -166,6 +170,7 @@ export default function ProductForm({
     return [];
   });
   const [uploading, setUploading] = useState(false);
+  const [variants, setVariants] = useState<ProductVariant[]>(existingVariants);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -301,17 +306,49 @@ export default function ProductForm({
         slug: values.slug || generateSlug(values.name),
       };
 
+      let productId = product?.id;
+
       if (product) {
         await supabase
           .from("products")
           .update(productData)
           .eq("id", product.id);
-        toast.success("Product updated successfully!");
+
+        // Delete existing variants and re-insert (simpler than update logic)
+        await supabase
+          .from("product_variants")
+          .delete()
+          .eq("product_id", product.id);
       } else {
-        await supabase.from("products").insert(productData);
-        toast.success("Product created successfully!");
+        const { data: newProduct } = await supabase
+          .from("products")
+          .insert(productData)
+          .select("id")
+          .single();
+        productId = newProduct?.id;
       }
 
+      // Insert variants if any
+      if (variants.length > 0 && productId) {
+        const variantsToInsert = variants.map((v, index) => ({
+          product_id: productId,
+          variant_name: v.variant_name,
+          sku: v.sku,
+          price_adjustment: v.price_adjustment,
+          stock: v.stock,
+          image_url: v.image_url || null,
+          sort_order: index,
+          is_active: v.is_active,
+        }));
+
+        await supabase.from("product_variants").insert(variantsToInsert);
+      }
+
+      toast.success(
+        product
+          ? "Product updated successfully!"
+          : "Product created successfully!"
+      );
       router.push("/admin/products");
       router.refresh();
     } catch (error: any) {
@@ -501,6 +538,13 @@ export default function ProductForm({
                 />
               </CardContent>
             </Card>
+
+            {/* Variants */}
+            <VariantManager
+              variants={variants}
+              onVariantsChange={setVariants}
+              basePrice={form.watch("price") || 0}
+            />
 
             {/* SEO */}
             <Card>

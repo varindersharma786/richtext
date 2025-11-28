@@ -46,12 +46,23 @@ export default async function EditProductPage({
     .eq("is_active", true)
     .order("name", { ascending: true });
 
+  // Fetch product variants
+  const { data: variants } = await supabase
+    .from("product_variants")
+    .select("*")
+    .eq("product_id", id)
+    .order("sort_order", { ascending: true });
+
   return (
     <div className="space-y-6 pb-16">
       <div>
         <h2 className="text-3xl font-bold tracking-tight">Edit Product</h2>
       </div>
-      <ProductForm product={product} categories={categories || []} />
+      <ProductForm
+        product={product}
+        categories={categories || []}
+        existingVariants={variants || []}
+      />
     </div>
   );
 }

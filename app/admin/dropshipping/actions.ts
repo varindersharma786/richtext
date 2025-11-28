@@ -11,9 +11,7 @@ const cjClient = new CJDropshippingClient(apiKey as string);
 
 export async function searchCJProducts(keyword: string, page: number = 1) {
     try {
-        console.log("Searching for products...");
         const result = await cjClient.searchProducts(keyword, page);
-        console.log(result);
         return { success: true, data: result };
     } catch (error: any) {
         console.log(error);
@@ -39,6 +37,7 @@ interface CJProductDetails {
     categoryName?: string;
     [key: string]: any;
 }
+
 export async function importCJProduct(product: CJProduct) {
     const supabase = await createClient();
 
@@ -126,6 +125,7 @@ export async function importCJProduct(product: CJProduct) {
         // 3.5. Handle Category
         // ──────────────────────────────
         let categoryId = null;
+        
         if (details.categoryName) {
             // Check if category exists
             const { data: existingCategory } = await supabase
@@ -165,9 +165,10 @@ export async function importCJProduct(product: CJProduct) {
         // ──────────────────────────────
         // 4. Final Product Data
         // ──────────────────────────────
+
         const productData = {
             name: details.productNameEn,
-            description: details.description?.trim() || null,
+            description: details.description || null,
             price: parseFloat(details.sellPrice || details.variants?.[0]?.variantSellPrice || "0") || 0,
             compare_at_price: parseFloat(details.suggestSellPrice || "0") || null,
             cost_price: parseFloat(details.sellPrice || "0") || null,
